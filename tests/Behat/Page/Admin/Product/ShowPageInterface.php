@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Admin\Product;
 
-use Sylius\Behat\Page\SyliusPageInterface;
+use FriendsOfBehat\PageObjectExtension\Page\SymfonyPageInterface;
 
-interface ShowPageInterface extends SyliusPageInterface
+interface ShowPageInterface extends SymfonyPageInterface
 {
     public function getBrandDiagnostics(): string;
 }

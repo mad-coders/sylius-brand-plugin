@@ -186,9 +186,12 @@ bin/console doctrine:migrations:migrate
 
 This creates `madcoders_brand__brand`, `madcoders_brand__brand_translation` and
 `madcoders_brand__brand_image`, and adds the `brand_id` column to `sylius_product`. The migration is
-written against the Schema API, so it runs on MySQL, MariaDB and PostgreSQL alike.
+written against the Schema API, so it is platform-neutral.
 
-The settings plugin has migrations of its own; they run in the same command.
+The settings plugin has migrations of its own; they run in the same command - and they are the
+reason **PostgreSQL is not supported**. Its table is created with raw MySQL DDL
+(`AUTO_INCREMENT`, `TINYINT(1)`, `LONGTEXT`, `ENGINE = InnoDB`) and no platform guard, so the
+command fails there before reaching this plugin's migration. Use MySQL 8.4 or MariaDB 11.4.
 
 ## 8. Configure the feature
 

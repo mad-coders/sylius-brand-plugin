@@ -38,6 +38,12 @@ Configuration lives in the admin, through
 | Sylius | `^2.0` (tested against `~2.0`, `~2.1`, `~2.2`) |
 | Symfony | `^6.4 \|\| ^7.4` |
 | Settings | `monsieurbiz/sylius-settings-plugin ^2.0` |
+| Database | MySQL 8.4 or MariaDB 11.4. **PostgreSQL is not supported** - see below. |
+
+> **PostgreSQL.** This plugin's own migration is platform-neutral, but
+> `monsieurbiz/sylius-settings-plugin` - a hard dependency - creates its table with raw MySQL DDL
+> and no platform guard, so migrations fail on PostgreSQL before this plugin is reached. Nothing
+> here can work around that; it has to be fixed upstream.
 
 ## Installation
 

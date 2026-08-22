@@ -18,7 +18,7 @@ a first-class, presentable entity.
 | Settings | `monsieurbiz/sylius-settings-plugin ^2.0` |
 | Test application | `sylius/test-application` (the Sylius 2.x plugin convention) |
 | Quality gates | PHPStan (level max), ECS, Rector, PHPUnit, Behat |
-| Databases covered in CI | MySQL 8.4, MariaDB 11.4, PostgreSQL 16 |
+| Databases covered in CI | MySQL 8.4, MariaDB 11.4 (PostgreSQL blocked upstream - see README) |
 
 ## Branching
 

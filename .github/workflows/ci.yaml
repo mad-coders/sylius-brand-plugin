@@ -110,11 +110,13 @@ jobs:
                         sylius: "~2.2.0"
                         database: "mariadb:11.4"
                         node: "22.x"
-                    -   php: "8.3"
-                        symfony: "^7.4"
-                        sylius: "~2.2.0"
-                        database: "postgres:16"
-                        node: "22.x"
+
+                    # No PostgreSQL. Not a limitation of this plugin - its own migration is written
+                    # against the Schema API and is platform-neutral - but of a hard dependency:
+                    # monsieurbiz/sylius-settings-plugin creates its table with raw MySQL DDL
+                    # (AUTO_INCREMENT, TINYINT(1), LONGTEXT, ENGINE = InnoDB) and no platform guard,
+                    # so `doctrine:migrations:migrate` dies before this plugin's migration is
+                    # reached. Restore this entry the day that is fixed upstream.
 
         env:
             APP_ENV: test
