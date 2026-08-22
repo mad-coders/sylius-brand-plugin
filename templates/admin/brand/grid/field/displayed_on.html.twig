@@ -1,0 +1,19 @@
+{# Grid field: the four display toggles as badges.
+
+   Four boolean columns would eat half the grid and still be hard to read at a glance. One column of
+   badges answers the question an admin actually has - "where does this brand show up?" - in a
+   single line. `data` is the whole brand (`path: "."`). #}
+{% set surfaces = [
+    { on: data.displayOnHomepage,       label: 'madcoders_sylius_brand.ui.homepage' },
+    { on: data.displayOnProductPage,    label: 'madcoders_sylius_brand.ui.product_page' },
+    { on: data.displayOnProductTile,    label: 'madcoders_sylius_brand.ui.product_tile' },
+    { on: data.displayOnBrandOverview,  label: 'madcoders_sylius_brand.ui.brand_overview' },
+]|filter(surface => surface.on) %}
+
+<div class="d-flex flex-wrap gap-1">
+    {% for surface in surfaces %}
+        <span class="badge bg-primary-lt">{{ surface.label|trans }}</span>
+    {% else %}
+        <span class="text-muted">{{ 'madcoders_sylius_brand.ui.displayed_nowhere'|trans }}</span>
+    {% endfor %}
+</div>

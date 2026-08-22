@@ -1,0 +1,61 @@
+madcoders_sylius_brand:
+    menu:
+        admin:
+            brands: Brands
+
+    ui:
+        brand: Brand
+        brands: Brands
+        logo: Logo
+        our_brands: Our brands
+        all_brands: All brands
+        no_brands: There are no brands to show yet.
+        no_products_for_brand: There are no products for this brand in this channel yet.
+
+        displayed_on: Displayed on
+        displayed_nowhere: Nowhere
+        homepage: Homepage
+        product_page: Product page
+        product_tile: Product tile
+        brand_overview: Brand overview
+
+        display_on_homepage: Display on the homepage
+        display_on_product_page: Display on the product page
+        display_on_product_tile: Display on product tiles
+        display_on_brand_overview: Display on the brand overview
+
+        products: Products
+        delete_warning: 'Deleting this brand will unbrand %count% product(s). They keep their attribute value, so re-running "madcoders:brand:resync-products" after creating a replacement brand will reattach them.'
+
+        diagnostics:
+            not_configured: 'No brand attribute is configured, so no product resolves to a brand. Set one in Settings -> Brands.'
+            attribute: Brand attribute
+            attribute_value: Value on this product
+            no_value: 'This product has no value for that attribute.'
+            resolves_to: Resolves to brand code
+            brand: Resolved brand
+            unresolved: 'None - this product is not attached to any brand.'
+            no_such_brand: 'The attribute resolves to a brand code, but no brand with that code exists. Create one, or add a mapping entry pointing this value at an existing brand, then re-run "madcoders:brand:resync-products".'
+
+    form:
+        brand:
+            code_help: A stable identifier for the brand. This is what the brand mapping points at, and what an attribute value has to match when no mapping is configured.
+            slug_help: Leave blank to generate one from the name. An existing slug is never changed automatically, because it is part of a live URL.
+            position_help: Lower numbers come first on the brand overview. Brands with the same position are ordered by name.
+            logo: Logo
+            display_on_brand_overview_help: Also controls whether the brand has its own product listing page. With this off, the brand's page returns 404.
+
+        mapping:
+            source: Attribute value
+            source_help: The value as it appears on the product attribute, for example "Nike Inc.". Matching ignores case and surrounding spaces.
+            brand: Brand code
+            brand_help: The code of the brand this value belongs to. Several values may point at the same brand.
+
+        settings:
+            enabled: Enable brands
+            enabled_help: When this is off the brand pages return 404 and no brand is shown anywhere in the shop.
+            brand_attribute: Brand attribute
+            brand_attribute_help: The product attribute carrying the brand. Only attributes whose value can name a brand are listed.
+            brand_attribute_placeholder: No attribute selected
+            brand_mapping: Brand mapping
+            brand_mapping_help: Maps attribute values onto brand codes, so several spellings can share one brand. Leave it empty to match attribute values against brand codes directly.

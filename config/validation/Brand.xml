@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Constraints live on the model, not on the form types, so they also apply to fixtures, imports
+    and any host code that persists a brand - a form is only one of the ways a brand gets created.
+
+    Symfony picks this directory up automatically: the bundle reports the repository root as its
+    path, and FrameworkExtension registers <bundle-path>/config/validation/*.xml.
+-->
+<constraint-mapping xmlns="http://symfony.com/schema/dic/constraint-mapping"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://symfony.com/schema/dic/constraint-mapping http://symfony.com/schema/dic/services/constraint-mapping-1.0.xsd">
+
+    <class name="Madcoders\SyliusBrandPlugin\Model\Brand">
+        <!-- Without this a duplicate code reaches the unique index and surfaces as a 500 rather
+             than a field error. -->
+        <constraint name="Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity">
+            <option name="fields">code</option>
+            <option name="message">madcoders_sylius_brand.brand.code.unique</option>
+            <option name="groups">madcoders_sylius_brand</option>
+        </constraint>
+
+        <property name="code">
+            <constraint name="NotBlank">
+                <option name="message">madcoders_sylius_brand.brand.code.not_blank</option>
+                <option name="groups">madcoders_sylius_brand</option>
+            </constraint>
+            <constraint name="Length">
+                <option name="max">64</option>
+                <option name="maxMessage">madcoders_sylius_brand.brand.code.max_length</option>
+                <option name="groups">madcoders_sylius_brand</option>
+            </constraint>
+            <!-- The code ends up in configuration files and mapping tables, so it is restricted to
+                 characters that survive a CSV round trip and a YAML key. -->
+            <constraint name="Regex">
+                <option name="pattern">/^[a-zA-Z0-9_\-]+$/</option>
+                <option name="message">madcoders_sylius_brand.brand.code.regex</option>
+                <option name="groups">madcoders_sylius_brand</option>
+            </constraint>
+        </property>
+
+        <property name="position">
+            <constraint name="NotNull">
+                <option name="message">madcoders_sylius_brand.brand.position.not_null</option>
+                <option name="groups">madcoders_sylius_brand</option>
+            </constraint>
+        </property>
+    </class>
+
+</constraint-mapping>

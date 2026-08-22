@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Shared by the admin form (before validation) and the resource event listener (for
+             every non-form write), so the two cannot generate different slugs. -->
+        <service id="madcoders_sylius_brand.generator.brand_slug"
+                 class="Madcoders\SyliusBrandPlugin\Generator\BrandSlugGenerator">
+            <argument type="service" id="sylius.generator.slug" />
+        </service>
+
+        <service id="Madcoders\SyliusBrandPlugin\Generator\BrandSlugGeneratorInterface"
+                 alias="madcoders_sylius_brand.generator.brand_slug" />
+    </services>
+
+</container>

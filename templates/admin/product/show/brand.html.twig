@@ -1,0 +1,54 @@
+{# Why this product has the brand it has - the admin's answer to "I set the mapping, why is this
+   product still unbranded?". Without it, diagnosing a mapping means opening a SQL client, because
+   the brand is derived and nothing else in the admin shows what it was derived from. #}
+{% set product = product ?? hookable_metadata.context.resource ?? null %}
+{% set d = madcoders_brand_diagnostics(product) %}
+
+<div class="card mb-3" {{ sylius_test_html_attribute('madcoders-product-brand-diagnostics') }}>
+    <div class="card-header">
+        <h5 class="card-title">{{ 'madcoders_sylius_brand.ui.brand'|trans }}</h5>
+    </div>
+    <div class="card-body">
+        {% if not d.configured %}
+            <p class="text-muted mb-0">{{ 'madcoders_sylius_brand.ui.diagnostics.not_configured'|trans }}</p>
+        {% else %}
+            <dl class="row mb-0">
+                <dt class="col-sm-4">{{ 'madcoders_sylius_brand.ui.diagnostics.attribute'|trans }}</dt>
+                <dd class="col-sm-8"><code>{{ d.attributeCode }}</code></dd>
+
+                <dt class="col-sm-4">{{ 'madcoders_sylius_brand.ui.diagnostics.attribute_value'|trans }}</dt>
+                <dd class="col-sm-8">
+                    {% if d.values is empty %}
+                        <span class="text-muted">{{ 'madcoders_sylius_brand.ui.diagnostics.no_value'|trans }}</span>
+                    {% else %}
+                        {% for value in d.values %}<code>{{ value }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-4">{{ 'madcoders_sylius_brand.ui.diagnostics.resolves_to'|trans }}</dt>
+                <dd class="col-sm-8">
+                    {% if d.resolvedCodes is empty %}
+                        <span class="text-muted">&mdash;</span>
+                    {% else %}
+                        {% for code in d.resolvedCodes %}<code>{{ code }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-4">{{ 'madcoders_sylius_brand.ui.diagnostics.brand'|trans }}</dt>
+                <dd class="col-sm-8 mb-0">
+                    {% if d.brand is not null %}
+                        <a href="{{ path('madcoders_sylius_brand_admin_brand_update', { id: d.brand.id }) }}">{{ d.brand.name ?? d.brand.code }}</a>
+                    {% else %}
+                        <span class="text-danger">{{ 'madcoders_sylius_brand.ui.diagnostics.unresolved'|trans }}</span>
+                    {% endif %}
+                </dd>
+            </dl>
+
+            {% if d.brand is null and d.resolvedCodes is not empty %}
+                <div class="alert alert-warning mt-3 mb-0">
+                    {{ 'madcoders_sylius_brand.ui.diagnostics.no_such_brand'|trans }}
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>

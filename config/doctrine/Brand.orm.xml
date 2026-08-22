@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <mapped-superclass name="Madcoders\SyliusBrandPlugin\Model\Brand" table="madcoders_brand__brand">
+        <id name="id" column="id" type="integer">
+            <generator strategy="AUTO" />
+        </id>
+
+        <field name="code" column="code" type="string" length="64" unique="true" />
+        <field name="position" column="position" type="integer" />
+        <field name="enabled" column="enabled" type="boolean" />
+        <field name="displayOnHomepage" column="display_on_homepage" type="boolean" />
+        <field name="displayOnProductPage" column="display_on_product_page" type="boolean" />
+        <field name="displayOnProductTile" column="display_on_product_tile" type="boolean" />
+        <field name="displayOnBrandOverview" column="display_on_brand_overview" type="boolean" />
+        <field name="createdAt" column="created_at" type="datetime" nullable="true" />
+        <field name="updatedAt" column="updated_at" type="datetime" nullable="true" />
+
+        <one-to-many field="images" target-entity="Madcoders\SyliusBrandPlugin\Model\BrandImageInterface" mapped-by="owner" orphan-removal="true">
+            <order-by>
+                <order-by-field name="id" />
+            </order-by>
+
+            <cascade>
+                <cascade-all />
+            </cascade>
+        </one-to-many>
+
+        <!-- `translations` is deliberately absent: the resource bundle's LoadORMMetadataSubscriber
+             maps it (indexed by locale, cascading, orphan-removing) from the resource's
+             `translation` configuration. Mapping it by hand duplicates the association. Sylius'
+             own translatable models do the same - see ProductBundle's Product.orm.xml. -->
+    </mapped-superclass>
+
+</doctrine-mapping>

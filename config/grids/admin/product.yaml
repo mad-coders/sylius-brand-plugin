@@ -1,0 +1,22 @@
+# Additions to Sylius' own product grid, merged into it by key.
+#
+# The brand is derived state, so it is shown and filtered but never edited here - the way to change
+# a product's brand is its attribute value or the mapping. Without these two, an operator has no way
+# to answer "which products ended up on this brand?" short of SQL.
+sylius_grid:
+    grids:
+        sylius_admin_product:
+            fields:
+                madcodersBrand:
+                    type: twig
+                    label: madcoders_sylius_brand.ui.brand
+                    path: brand
+                    options:
+                        template: "@MadcodersSyliusBrandPlugin/admin/product/grid/field/brand.html.twig"
+            filters:
+                brand:
+                    type: entity
+                    label: madcoders_sylius_brand.ui.brand
+                    form_options:
+                        class: "%madcoders_sylius_brand.model.brand.class%"
+                        choice_label: code

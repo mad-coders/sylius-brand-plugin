@@ -1,0 +1,7 @@
+{# The resolved brand on the admin product grid. Derived state, so it is a link to the brand rather
+   than an editable field - the way to change it is the product attribute. #}
+{% if data is not null %}
+    <a href="{{ path('madcoders_sylius_brand_admin_brand_update', { id: data.id }) }}">{{ data.name ?? data.code }}</a>
+{% else %}
+    <span class="text-muted">&mdash;</span>
+{% endif %}

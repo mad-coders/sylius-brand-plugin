@@ -1,0 +1,29 @@
+# The plugin's settings section, prepended into MonsieurBiz' Settings plugin by
+# MadcodersSyliusBrandExtension::prependSettings(). It is NOT imported from config/config.yaml:
+# importing configuration for an extension the host has not registered is a hard container failure,
+# and the settings plugin's bundle is registered by the host, not by us.
+#
+# The alias must be exactly `<applicationName>.<name>` - the settings plugin splits it on a single
+# dot. `madcoders_brand.default` satisfies that; anything with two dots does not.
+#
+# See docs/adr-log/0003-configuration-through-the-settings-plugin.md.
+monsieurbiz_sylius_settings:
+    plugins:
+        madcoders_brand.default:
+            vendor_name: Madcoders
+            vendor_url: 'https://www.madcoders.co'
+            plugin_name: Brands
+            description: 'Feature toggle, the product attribute carrying the brand, and the value-to-brand mapping.'
+            icon: tabler:tag
+            # None of these settings are locale-specific: an attribute code and a mapping of raw
+            # attribute values to brand codes are the same in every language. Per-channel still
+            # applies, which is the axis that matters (a B2B channel may read a different
+            # attribute).
+            use_locales: false
+            classes:
+                form: Madcoders\SyliusBrandPlugin\Form\Type\SettingsType
+            default_values:
+                # Off by default: an unconfigured plugin must be invisible in the shop.
+                enabled: false
+                brand_attribute: null
+                brand_mapping: []

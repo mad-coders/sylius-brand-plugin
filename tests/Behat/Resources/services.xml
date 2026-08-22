@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <defaults public="true" />
+
+        <!-- Setup contexts -->
+
+        <service id="madcoders_sylius_brand.behat.context.setup.brand"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Setup\BrandContext">
+            <argument type="service" id="sylius.behat.shared_storage" />
+            <argument type="service" id="madcoders_sylius_brand.fixture.example_factory.brand" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+            <argument type="service" id="madcoders_sylius_brand.manager.brand" />
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.context.setup.brand_settings"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Setup\BrandSettingsContext">
+            <argument type="service" id="monsieurbiz.settings.registry" />
+            <argument type="service" id="MonsieurBiz\SyliusSettingsPlugin\Provider\SettingProvider" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="monsieurbiz_settings.cache" />
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.context.setup.brand_product"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Setup\BrandProductContext">
+            <argument type="service" id="sylius.behat.shared_storage" />
+            <argument type="service" id="sylius.factory.product" />
+            <argument type="service" id="sylius.factory.product_variant" />
+            <argument type="service" id="sylius.factory.channel_pricing" />
+            <argument type="service" id="sylius.factory.product_attribute" />
+            <argument type="service" id="sylius.factory.product_attribute_value" />
+            <argument type="service" id="sylius.repository.product_attribute" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+            <argument type="service" id="madcoders_sylius_brand.resolver.product_brand_synchronizer" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+        </service>
+
+        <!-- Admin UI -->
+
+        <service id="madcoders_sylius_brand.behat.context.ui.admin.managing_brands"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Ui\Admin\ManagingBrandsContext">
+            <argument type="service" id="sylius.behat.shared_storage" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.admin.brand.index" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.admin.brand.create" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.admin.brand.update" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.admin.product.index" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.admin.product.show" />
+            <argument type="service" id="sylius.repository.product" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+            <argument type="service" id="madcoders_sylius_brand.manager.brand" />
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.page.admin.brand.index"
+                 class="Sylius\Behat\Page\Admin\Crud\IndexPage"
+                 parent="sylius.behat.page.admin.crud.index"
+                 public="false">
+            <argument type="string">madcoders_sylius_brand_admin_brand_index</argument>
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.page.admin.brand.create"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Admin\Brand\CreatePage"
+                 parent="sylius.behat.page.admin.crud.create"
+                 public="false">
+            <argument type="string">madcoders_sylius_brand_admin_brand_create</argument>
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.page.admin.brand.update"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Admin\Brand\UpdatePage"
+                 parent="sylius.behat.page.admin.crud.update"
+                 public="false">
+            <argument type="string">madcoders_sylius_brand_admin_brand_update</argument>
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.page.admin.product.index"
+                 class="Sylius\Behat\Page\Admin\Crud\IndexPage"
+                 parent="sylius.behat.page.admin.crud.index"
+                 public="false">
+            <argument type="string">sylius_admin_product_index</argument>
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.page.admin.product.show"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Admin\Product\ShowPage"
+                 parent="sylius.behat.symfony_page"
+                 public="false" />
+
+        <!-- Shop UI -->
+
+        <service id="madcoders_sylius_brand.behat.context.ui.shop.brand"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Ui\Shop\BrandContext">
+            <argument type="service" id="madcoders_sylius_brand.behat.page.shop.brand.index" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.shop.brand.show" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+        </service>
+
+        <service id="madcoders_sylius_brand.behat.page.shop.brand.index"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\Brand\IndexPage"
+                 parent="sylius.behat.page.shop.page"
+                 public="false" />
+
+        <service id="madcoders_sylius_brand.behat.page.shop.brand.show"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\Brand\ShowPage"
+                 parent="sylius.behat.page.shop.page"
+                 public="false" />
+    </services>
+
+</container>

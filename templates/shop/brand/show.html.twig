@@ -1,0 +1,62 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% import '@SyliusShop/shared/breadcrumbs.html.twig' as breadcrumbs %}
+{% import '@SyliusShop/shared/messages.html.twig' as messages %}
+{% import '@SyliusShop/shared/pagination/pagination.html.twig' as pagination %}
+
+{% set prefixes = ['madcoders_sylius_brand.shop.brand.show'] %}
+
+{% block title %}{{ brand.name }} | {{ parent() }}{% endblock %}
+
+{% block metatags %}
+    {{ parent() }}
+
+    {% if brand.metaDescription is not empty %}
+        <meta name="description" content="{{ brand.metaDescription }}">
+    {% endif %}
+    {% if brand.metaKeywords is not empty %}
+        <meta name="keywords" content="{{ brand.metaKeywords }}">
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4 mb-5" {{ sylius_test_html_attribute('madcoders-brand-show') }}>
+        {{ breadcrumbs.breadcrumbs([
+            { path: path('sylius_shop_homepage'), label: 'sylius.ui.home'|trans },
+            { path: path('madcoders_sylius_brand_shop_brand_index'), label: 'madcoders_sylius_brand.ui.our_brands'|trans },
+            { label: brand.name, active: true },
+        ]) }}
+
+        <header class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-4">
+            {% if brand.logo is not null and brand.logo.path is not null %}
+                <img src="{{ brand.logo.path|imagine_filter('madcoders_sylius_brand_logo') }}"
+                     alt="{{ brand.name }}"
+                     class="img-fluid"
+                     style="max-height: 120px; max-width: 240px;">
+            {% endif %}
+
+            <div>
+                <h1 class="mb-1">{{ brand.name }}</h1>
+
+                {% if brand.description is not empty %}
+                    <p class="text-muted mb-0">{{ brand.description|nl2br }}</p>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if products.nbResults == 0 %}
+            {{ messages.info('madcoders_sylius_brand.ui.no_products_for_brand') }}
+        {% else %}
+            <div class="products-grid" {{ sylius_test_html_attribute('products') }}>
+                {% for product in products %}
+                    {{ component('sylius_shop:product:card', {
+                        product: product,
+                        template: '@SyliusShop/product/common/card.html.twig',
+                    }) }}
+                {% endfor %}
+            </div>
+
+            {{ pagination.simple(products) }}
+        {% endif %}
+    </div>
+{% endblock %}

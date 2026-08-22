@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="madcoders_sylius_brand.form.type.brand"
+                 class="Madcoders\SyliusBrandPlugin\Form\Type\BrandType">
+            <argument>%madcoders_sylius_brand.model.brand.class%</argument>
+            <argument type="collection">
+                <argument>madcoders_sylius_brand</argument>
+            </argument>
+
+            <tag name="form.type" />
+        </service>
+
+        <service id="madcoders_sylius_brand.form.type.brand_translation"
+                 class="Madcoders\SyliusBrandPlugin\Form\Type\BrandTranslationType">
+            <argument>%madcoders_sylius_brand.model.brand_translation.class%</argument>
+            <argument type="collection">
+                <argument>madcoders_sylius_brand</argument>
+            </argument>
+            <argument type="service" id="madcoders_sylius_brand.generator.brand_slug" />
+
+            <tag name="form.type" />
+        </service>
+
+        <service id="madcoders_sylius_brand.form.type.brand_image"
+                 class="Madcoders\SyliusBrandPlugin\Form\Type\BrandImageType">
+            <argument>%madcoders_sylius_brand.model.brand_image.class%</argument>
+            <argument type="collection">
+                <argument>madcoders_sylius_brand</argument>
+            </argument>
+
+            <tag name="form.type" />
+        </service>
+
+        <!-- The Settings plugin instantiates the form through the form factory, so it has to be a
+             registered form type like any other. -->
+        <service id="madcoders_sylius_brand.form.type.settings"
+                 class="Madcoders\SyliusBrandPlugin\Form\Type\SettingsType">
+            <argument type="service" id="sylius.repository.product_attribute" />
+
+            <tag name="form.type" />
+        </service>
+
+        <service id="madcoders_sylius_brand.form.type.brand_mapping_entry"
+                 class="Madcoders\SyliusBrandPlugin\Form\Type\BrandMappingEntryType">
+            <tag name="form.type" />
+        </service>
+    </services>
+
+</container>

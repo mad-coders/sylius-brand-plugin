@@ -1,0 +1,36 @@
+{# Homepage brand strip.
+
+   Renders nothing when the feature is off or no brand has the homepage toggle on - a heading over
+   an empty row is worse than no section at all. #}
+{% set brands = madcoders_homepage_brands() %}
+
+{% if brands is not empty %}
+    <section class="container my-5" {{ sylius_test_html_attribute('madcoders-brands') }}>
+        <div class="d-flex align-items-baseline justify-content-between mb-3">
+            <h2 class="h3 mb-0">{{ 'madcoders_sylius_brand.ui.our_brands'|trans }}</h2>
+
+            <a href="{{ path('madcoders_sylius_brand_shop_brand_index') }}" class="link-secondary">
+                {{ 'madcoders_sylius_brand.ui.all_brands'|trans }}
+            </a>
+        </div>
+
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+            {% for brand in brands %}
+                <div class="col">
+                    <a href="{{ path('madcoders_sylius_brand_shop_brand_show', { slug: brand.slug }) }}"
+                       class="d-flex align-items-center justify-content-center h-100 p-3 border rounded text-decoration-none text-center"
+                       title="{{ brand.name }}">
+                        {% if brand.logo is not null and brand.logo.path is not null %}
+                            <img src="{{ brand.logo.path|imagine_filter('madcoders_sylius_brand_logo_tile') }}"
+                                 alt="{{ brand.name }}"
+                                 class="img-fluid"
+                                 loading="lazy">
+                        {% else %}
+                            <span class="fw-semibold">{{ brand.name }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}

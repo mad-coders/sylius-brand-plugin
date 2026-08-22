@@ -1,0 +1,9 @@
+{# How many products currently point at this brand. Counted for the whole page in one query - see
+   BrandAdminRuntime::getProductCount(). `data` is the whole brand (`path: "."`). #}
+{% set count = madcoders_brand_product_count(data) %}
+
+{% if count > 0 %}
+    <span class="badge bg-secondary-lt">{{ count }}</span>
+{% else %}
+    <span class="text-muted">0</span>
+{% endif %}

@@ -1,0 +1,26 @@
+# Filter sets for brand logos, prepended by MadcodersSyliusBrandExtension::prependImagineFilterSets()
+# so a freshly installed plugin renders logos instead of throwing "Could not find configuration for
+# a filter".
+#
+# `inset` rather than `outbound`: a logo must never be cropped. Letterboxing a wide wordmark is
+# fine; cutting the last two letters off it is not. `allow_upscale` is left off so a small source
+# file is shown at its own size rather than blurred.
+liip_imagine:
+    filter_sets:
+        madcoders_sylius_brand_logo:
+            filters:
+                thumbnail:
+                    size: [400, 200]
+                    mode: inset
+
+        madcoders_sylius_brand_logo_thumbnail:
+            filters:
+                thumbnail:
+                    size: [120, 60]
+                    mode: inset
+
+        madcoders_sylius_brand_logo_tile:
+            filters:
+                thumbnail:
+                    size: [240, 120]
+                    mode: inset

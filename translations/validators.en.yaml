@@ -1,0 +1,21 @@
+# Constraint messages live in the `validators` domain - the validator translates them there, not in
+# `messages`, and a key that is only defined in `messages` renders as the raw key.
+madcoders_sylius_brand:
+    brand:
+        code:
+            not_blank: Please enter a brand code.
+            max_length: A brand code must not be longer than {{ limit }} characters.
+            regex: A brand code may only contain letters, numbers, underscores and hyphens.
+            unique: There is already a brand with this code.
+        name:
+            not_blank: Please enter a brand name.
+            max_length: A brand name must not be longer than {{ limit }} characters.
+        slug:
+            max_length: A brand slug must not be longer than {{ limit }} characters.
+            unique: There is already a brand with this slug in this locale.
+        position:
+            not_null: Please enter a position.
+        meta_keywords:
+            max_length: Meta keywords must not be longer than {{ limit }} characters.
+        meta_description:
+            max_length: The meta description must not be longer than {{ limit }} characters.

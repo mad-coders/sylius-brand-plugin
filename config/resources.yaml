@@ -1,0 +1,23 @@
+sylius_resource:
+    resources:
+        madcoders_sylius_brand.brand:
+            driver: doctrine/orm
+            classes:
+                model: Madcoders\SyliusBrandPlugin\Model\Brand
+                interface: Madcoders\SyliusBrandPlugin\Model\BrandInterface
+                repository: Madcoders\SyliusBrandPlugin\Repository\BrandRepository
+            translation:
+                classes:
+                    model: Madcoders\SyliusBrandPlugin\Model\BrandTranslation
+                    interface: Madcoders\SyliusBrandPlugin\Model\BrandTranslationInterface
+
+        madcoders_sylius_brand.brand_image:
+            driver: doctrine/orm
+            classes:
+                model: Madcoders\SyliusBrandPlugin\Model\BrandImage
+                interface: Madcoders\SyliusBrandPlugin\Model\BrandImageInterface
+
+# No `form:` class on either resource on purpose: setting it makes the resource bundle register the
+# form type itself, which would collide with the explicit declarations in config/services/forms.xml.
+# The forms are declared there, with their ids and validation groups visible - see
+# docs/adr-log/0005-service-wiring.md.

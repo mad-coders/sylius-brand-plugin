@@ -1,0 +1,18 @@
+# Admin routes contributed by the plugin. Imported by the host application under the admin route
+# prefix (see docs/INSTALLATION.md).
+
+madcoders_sylius_brand_admin_brand:
+    resource: |
+        alias: madcoders_sylius_brand.brand
+        section: admin
+        permission: true
+        templates: "@SyliusAdmin\\shared\\crud"
+        except: ['show']
+        redirect: update
+        grid: madcoders_sylius_brand_admin_brand
+        form:
+            type: Madcoders\SyliusBrandPlugin\Form\Type\BrandType
+            # The validation group the form's constraints are declared under, so a host application
+            # that adds its own constraints to the Brand model is not forced into ours.
+            validation_groups: [madcoders_sylius_brand]
+    type: sylius.resource

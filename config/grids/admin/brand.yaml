@@ -1,0 +1,105 @@
+sylius_grid:
+    grids:
+        madcoders_sylius_brand_admin_brand:
+            driver:
+                name: doctrine/orm
+                options:
+                    class: "%madcoders_sylius_brand.model.brand.class%"
+                    # A translatable grid cannot use the bare doctrine/orm driver: sorting and
+                    # filtering on `translation.name` need the translation joined under exactly
+                    # that alias. Same shape as Sylius' own product option grid.
+                    repository:
+                        method: createListQueryBuilder
+                        arguments: ["expr:service('sylius.context.locale').getLocaleCode()"]
+            sorting:
+                position: asc
+            limits: [25, 50, 100]
+            fields:
+                logo:
+                    type: twig
+                    label: madcoders_sylius_brand.ui.logo
+                    # path "." hands the whole brand to the template: the logo lives in the images
+                    # collection, and a grid field otherwise receives only the value at its path.
+                    path: .
+                    options:
+                        template: "@MadcodersSyliusBrandPlugin/admin/brand/grid/field/logo.html.twig"
+                        vars:
+                            th_class: "w-1"
+                name:
+                    type: twig
+                    label: sylius.ui.name
+                    sortable: translation.name
+                    options:
+                        template: "@SyliusAdmin/shared/grid/field/name.html.twig"
+                slug:
+                    type: string
+                    label: sylius.ui.slug
+                    sortable: translation.slug
+                code:
+                    type: twig
+                    label: sylius.ui.code
+                    sortable: ~
+                    options:
+                        template: "@SyliusAdmin/shared/grid/field/code.html.twig"
+                description:
+                    type: twig
+                    label: sylius.ui.description
+                    options:
+                        template: "@MadcodersSyliusBrandPlugin/admin/brand/grid/field/description.html.twig"
+                displayedOn:
+                    type: twig
+                    label: madcoders_sylius_brand.ui.displayed_on
+                    path: .
+                    options:
+                        template: "@MadcodersSyliusBrandPlugin/admin/brand/grid/field/displayed_on.html.twig"
+                productCount:
+                    type: twig
+                    label: madcoders_sylius_brand.ui.products
+                    path: .
+                    options:
+                        template: "@MadcodersSyliusBrandPlugin/admin/brand/grid/field/product_count.html.twig"
+                        vars:
+                            th_class: "w-1 text-center"
+                            td_class: "text-center"
+                position:
+                    type: string
+                    label: sylius.ui.position
+                    sortable: ~
+                enabled:
+                    type: twig
+                    label: sylius.ui.enabled
+                    sortable: ~
+                    options:
+                        template: "@SyliusAdmin/shared/grid/field/boolean.html.twig"
+            filters:
+                search:
+                    type: string
+                    label: sylius.ui.search
+                    form_options:
+                        type: !php/const Sylius\Component\Grid\Filter\StringFilter::TYPE_CONTAINS
+                    options:
+                        fields: [code, translation.name]
+                enabled:
+                    type: boolean
+                    label: sylius.ui.enabled
+                displayOnHomepage:
+                    type: boolean
+                    label: madcoders_sylius_brand.ui.display_on_homepage
+                displayOnBrandOverview:
+                    type: boolean
+                    label: madcoders_sylius_brand.ui.display_on_brand_overview
+            actions:
+                main:
+                    create:
+                        type: create
+                item:
+                    update:
+                        type: update
+                    delete:
+                        type: delete
+                        # Shows how many products will be unbranded before you confirm.
+                        options:
+                            template: "@MadcodersSyliusBrandPlugin/admin/brand/grid/action/delete.html.twig"
+                bulk:
+                    delete:
+                        type: delete

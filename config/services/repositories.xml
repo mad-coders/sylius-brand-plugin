@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- madcoders_sylius_brand.repository.brand is registered by the resource bundle from
+             config/resources.yaml; only the interface alias is ours, so host code can autowire it. -->
+        <service id="Madcoders\SyliusBrandPlugin\Repository\BrandRepositoryInterface"
+                 alias="madcoders_sylius_brand.repository.brand" />
+
+        <!-- A read model over the host's own product entity rather than a decoration of
+             sylius.repository.product - see the interface for why. -->
+        <service id="madcoders_sylius_brand.repository.product_by_brand"
+                 class="Madcoders\SyliusBrandPlugin\Repository\ProductByBrandRepository">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument>%sylius.model.product.class%</argument>
+            <argument>%sylius.model.product_variant.class%</argument>
+        </service>
+
+        <service id="Madcoders\SyliusBrandPlugin\Repository\ProductByBrandRepositoryInterface"
+                 alias="madcoders_sylius_brand.repository.product_by_brand" />
+    </services>
+
+</container>

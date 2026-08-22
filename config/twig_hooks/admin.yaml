@@ -1,0 +1,8 @@
+sylius_twig_hooks:
+    hooks:
+        # Between taxonomy (400) and associations (300) on the product show page: the brand is
+        # classification, so it reads next to the taxons rather than down with the media.
+        'sylius_admin.product.show.content.page_body':
+            madcoders_brand:
+                template: '@MadcodersSyliusBrandPlugin/admin/product/show/brand.html.twig'
+                priority: 350

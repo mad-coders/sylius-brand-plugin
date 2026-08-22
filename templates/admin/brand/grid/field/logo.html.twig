@@ -1,0 +1,14 @@
+{# Grid field: the brand's logo, or a dash when it has none.
+
+   `data` is the whole brand (the grid field is configured with `path: "."`), because the logo lives
+   in the images collection rather than at a single property path. #}
+{% set logo = data.logo %}
+
+{% if logo is not null and logo.path is not null %}
+    <img src="{{ logo.path|imagine_filter('madcoders_sylius_brand_logo_thumbnail') }}"
+         alt="{{ data.name ?? data.code }}"
+         class="img-fluid"
+         style="max-height: 40px; max-width: 120px;">
+{% else %}
+    <span class="text-muted">&mdash;</span>
+{% endif %}

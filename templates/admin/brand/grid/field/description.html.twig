@@ -1,0 +1,10 @@
+{# Grid field: the brand description, truncated. A brand description is prose - printing it in full
+   would push every other column off the grid.
+
+   Sliced rather than truncated with the String extension, which Sylius does not guarantee is
+   installed in a host application. #}
+{% if data is empty %}
+    <span class="text-muted">&mdash;</span>
+{% else %}
+    <span title="{{ data }}">{{ data|length > 80 ? data|slice(0, 80) ~ '…' : data }}</span>
+{% endif %}

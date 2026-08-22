@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="madcoders_sylius_brand.resolver.product_brand"
+                 class="Madcoders\SyliusBrandPlugin\Resolver\ProductBrandResolver">
+            <argument type="service" id="madcoders_sylius_brand.provider.settings" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+
+            <!-- Memoises brands by code; the entities must not outlive the request or the worker
+                 message that loaded them. -->
+            <tag name="kernel.reset" method="reset" />
+        </service>
+
+        <service id="Madcoders\SyliusBrandPlugin\Resolver\ProductBrandResolverInterface"
+                 alias="madcoders_sylius_brand.resolver.product_brand" />
+
+        <!-- The only writer of sylius_product.brand_id - see
+             docs/adr-log/0004-brand-resolution-from-a-product-attribute.md. -->
+        <service id="madcoders_sylius_brand.resolver.product_brand_synchronizer"
+                 class="Madcoders\SyliusBrandPlugin\Resolver\ProductBrandSynchronizer">
+            <argument type="service" id="madcoders_sylius_brand.resolver.product_brand" />
+        </service>
+
+        <service id="Madcoders\SyliusBrandPlugin\Resolver\ProductBrandSynchronizerInterface"
+                 alias="madcoders_sylius_brand.resolver.product_brand_synchronizer" />
+    </services>
+
+</container>

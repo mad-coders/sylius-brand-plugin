@@ -1,0 +1,24 @@
+sylius_twig_hooks:
+    hooks:
+        # A strip of brand logos on the homepage, between the banner (300) and the latest deals
+        # (200), so it reads as part of the hero area rather than as another product carousel.
+        'sylius_shop.homepage.index':
+            madcoders_brands:
+                template: '@MadcodersSyliusBrandPlugin/shop/homepage/brands.html.twig'
+                priority: 250
+
+        # The brand badge on the product page. Priority 450 puts it between Sylius' product header
+        # (500) and its average rating (400) - directly under the product name, which is where a
+        # shopper looks for the maker.
+        'sylius_shop.product.show.content.info.summary':
+            madcoders_brand:
+                template: '@MadcodersSyliusBrandPlugin/shop/product/show/brand.html.twig'
+                priority: 450
+
+        # The brand line on a product tile. Sylius' card details hook renders the image at 100 and
+        # the name at 0; 50 puts the brand between them, which is the conventional place for it in
+        # a product grid.
+        'sylius_shop.shared.product.card.details':
+            madcoders_brand:
+                template: '@MadcodersSyliusBrandPlugin/shop/product/card/brand.html.twig'
+                priority: 50

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Keeps the denormalised brand on the product in step with its brand attribute. Every
+             other write path is covered by `bin/console madcoders:brand:resync-products`. -->
+        <service id="madcoders_sylius_brand.listener.synchronize_product_brand"
+                 class="Madcoders\SyliusBrandPlugin\EventListener\SynchronizeProductBrandListener">
+            <argument type="service" id="madcoders_sylius_brand.resolver.product_brand_synchronizer" />
+
+            <tag name="kernel.event_listener" event="sylius.product.pre_create" method="__invoke" />
+            <tag name="kernel.event_listener" event="sylius.product.pre_update" method="__invoke" />
+        </service>
+
+        <!-- Fills a blank slug from the name, per locale. -->
+        <service id="madcoders_sylius_brand.listener.generate_brand_slug"
+                 class="Madcoders\SyliusBrandPlugin\EventListener\GenerateBrandSlugListener">
+            <argument type="service" id="madcoders_sylius_brand.generator.brand_slug" />
+
+            <tag name="kernel.event_listener" event="madcoders_sylius_brand.brand.pre_create" method="__invoke" />
+            <tag name="kernel.event_listener" event="madcoders_sylius_brand.brand.pre_update" method="__invoke" />
+        </service>
+
+        <!-- Sylius' own image upload listener, wired for the brand resource. There is nothing
+             plugin-specific about uploading an image, and reimplementing it would only mean a
+             second place for the upload path convention to drift. -->
+        <service id="madcoders_sylius_brand.listener.images_upload"
+                 class="Sylius\Bundle\CoreBundle\EventListener\ImagesUploadListener">
+            <argument type="service" id="sylius.uploader.image" />
+
+            <tag name="kernel.event_listener" event="madcoders_sylius_brand.brand.pre_create" method="uploadImages" />
+            <tag name="kernel.event_listener" event="madcoders_sylius_brand.brand.pre_update" method="uploadImages" />
+        </service>
+    </services>
+
+</container>

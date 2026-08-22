@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="madcoders_sylius_brand.command.resync_product_brands"
+                 class="Madcoders\SyliusBrandPlugin\Command\ResyncProductBrandsCommand">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="madcoders_sylius_brand.resolver.product_brand_synchronizer" />
+            <argument type="service" id="madcoders_sylius_brand.provider.settings" />
+            <argument>%sylius.model.product.class%</argument>
+
+            <tag name="console.command" />
+        </service>
+    </services>
+
+</container>

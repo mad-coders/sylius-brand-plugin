@@ -1,0 +1,13 @@
+monsieurbiz_sylius_settings_admin:
+    resource: "@MonsieurBizSyliusSettingsPlugin/Resources/config/routes/admin.yaml"
+    prefix: /admin
+
+madcoders_sylius_brand_admin:
+    resource: "@MadcodersSyliusBrandPlugin/config/routes/admin.yaml"
+    prefix: /admin
+
+madcoders_sylius_brand_shop:
+    resource: "@MadcodersSyliusBrandPlugin/config/routes/shop.yaml"
+    prefix: /{_locale}
+    requirements:
+        _locale: ^[A-Za-z]{2,4}(_([A-Za-z]{4}|[0-9]{3}))?(_([A-Za-z]{2}|[0-9]{3}))?$

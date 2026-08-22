@@ -1,0 +1,13 @@
+{# Renders a brand as a link when its own page is reachable, and as plain text when it is not.
+
+   `displayOnBrandOverview` gates the brand's listing page, so linking to it from a tile or a badge
+   would produce a 404 - see docs/adr-log/0008-display-toggles-per-brand.md. The brand name is still
+   worth showing; only the link goes away.
+
+   Parameters: `brand`, and an optional `class`. #}
+{% if brand.displayOnBrandOverview %}
+    <a href="{{ path('madcoders_sylius_brand_shop_brand_show', { slug: brand.slug }) }}"
+       class="{{ class|default('') }}">{{ brand.name }}</a>
+{% else %}
+    <span class="{{ class|default('') }}">{{ brand.name }}</span>
+{% endif %}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- The plugin's single reader of the Settings plugin - see
+             docs/adr-log/0003-configuration-through-the-settings-plugin.md. -->
+        <service id="madcoders_sylius_brand.provider.settings"
+                 class="Madcoders\SyliusBrandPlugin\Provider\BrandSettingsProvider">
+            <argument type="service" id="MonsieurBiz\SyliusSettingsPlugin\Provider\SettingsProviderInterface" />
+            <argument type="service" id="monsieurbiz.settings.registry" />
+            <argument type="service" id="sylius.context.channel" />
+            <argument type="service" id="sylius.repository.channel" />
+
+            <!-- The normalised mapping is memoised; without this a Messenger worker would keep
+                 serving the settings it read on its first message. -->
+            <tag name="kernel.reset" method="reset" />
+        </service>
+
+        <service id="Madcoders\SyliusBrandPlugin\Provider\BrandSettingsProviderInterface"
+                 alias="madcoders_sylius_brand.provider.settings" />
+    </services>
+
+</container>

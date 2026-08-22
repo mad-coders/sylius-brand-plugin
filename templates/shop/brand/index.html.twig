@@ -1,0 +1,44 @@
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% import '@SyliusShop/shared/breadcrumbs.html.twig' as breadcrumbs %}
+{% import '@SyliusShop/shared/messages.html.twig' as messages %}
+
+{% set prefixes = ['madcoders_sylius_brand.shop.brand.index'] %}
+
+{% block title %}{{ 'madcoders_sylius_brand.ui.our_brands'|trans }} | {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="container mt-4 mb-5" {{ sylius_test_html_attribute('madcoders-brand-index') }}>
+        {{ breadcrumbs.breadcrumbs([
+            { path: path('sylius_shop_homepage'), label: 'sylius.ui.home'|trans },
+            { label: 'madcoders_sylius_brand.ui.our_brands'|trans, active: true },
+        ]) }}
+
+        <h1 class="mb-4">{{ 'madcoders_sylius_brand.ui.our_brands'|trans }}</h1>
+
+        {% if brands is empty %}
+            {{ messages.info('madcoders_sylius_brand.ui.no_brands') }}
+        {% else %}
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
+                {% for brand in brands %}
+                    <div class="col">
+                        <a href="{{ path('madcoders_sylius_brand_shop_brand_show', { slug: brand.slug }) }}"
+                           class="card h-100 text-decoration-none text-reset"
+                           {{ sylius_test_html_attribute('madcoders-brand', brand.code) }}>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center gap-2 text-center">
+                                {% if brand.logo is not null and brand.logo.path is not null %}
+                                    <img src="{{ brand.logo.path|imagine_filter('madcoders_sylius_brand_logo_tile') }}"
+                                         alt="{{ brand.name }}"
+                                         class="img-fluid"
+                                         loading="lazy">
+                                {% endif %}
+
+                                <span class="fw-semibold">{{ brand.name }}</span>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

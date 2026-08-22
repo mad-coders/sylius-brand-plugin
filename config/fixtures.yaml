@@ -1,0 +1,51 @@
+# Adds brand fixtures to Sylius' default suite, so `bin/console sylius:fixtures:load` gives a shop
+# with brands you can actually browse.
+#
+# The priority is negative so this runs after Sylius' own fixtures: brands need locales to exist
+# before they can be translated.
+#
+# These fixtures create brands only. They do not touch the product attribute or the plugin's
+# settings, because doing so would silently overwrite whatever a developer had configured. See
+# docs/INSTALLATION.md for the two commands that finish the setup.
+sylius_fixtures:
+    suites:
+        default:
+            fixtures:
+                madcoders_brand:
+                    priority: -10
+                    options:
+                        custom:
+                            -   code: 'sylius'
+                                name: 'Sylius'
+                                description: 'The house brand. Shown everywhere, so every display toggle is on.'
+                                position: 0
+                                display_on_homepage: true
+                                display_on_product_page: true
+                                display_on_product_tile: true
+                                display_on_brand_overview: true
+
+                            -   code: 'modern-wear'
+                                name: 'Modern Wear'
+                                description: 'A brand with its own page and a badge on the product page, but no homepage slot.'
+                                position: 10
+
+                            # On the overview but nowhere else - the long-tail supplier case.
+                            -   code: 'quiet-supplier'
+                                name: 'Quiet Supplier'
+                                position: 20
+                                display_on_product_page: false
+
+                            # Exists for mapping and filtering, but is invisible in the shop: the
+                            # state that proves the overview toggle also gates the brand's page.
+                            -   code: 'white-label'
+                                name: 'White Label'
+                                position: 30
+                                display_on_brand_overview: false
+
+                            # Disabled entirely, to prove a disabled brand is never rendered
+                            # whatever its toggles say.
+                            -   code: 'retired-brand'
+                                name: 'Retired Brand'
+                                position: 40
+                                enabled: false
+                                display_on_homepage: true

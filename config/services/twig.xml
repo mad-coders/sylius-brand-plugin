@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="madcoders_sylius_brand.twig.extension.brand"
+                 class="Madcoders\SyliusBrandPlugin\Twig\BrandExtension">
+            <tag name="twig.extension" />
+        </service>
+
+        <!-- Registered as a runtime so that the repository and the settings provider are only
+             instantiated on the pages that actually call one of the functions. -->
+        <service id="madcoders_sylius_brand.twig.runtime.brand"
+                 class="Madcoders\SyliusBrandPlugin\Twig\BrandRuntime">
+            <argument type="service" id="madcoders_sylius_brand.provider.settings" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+            <argument type="service" id="sylius.context.locale" />
+
+            <tag name="twig.runtime" />
+            <!-- Memoises the tile-displayable brand set for the request. -->
+            <tag name="kernel.reset" method="reset" />
+        </service>
+
+        <service id="madcoders_sylius_brand.twig.extension.brand_admin"
+                 class="Madcoders\SyliusBrandPlugin\Twig\BrandAdminExtension">
+            <tag name="twig.extension" />
+        </service>
+
+        <service id="madcoders_sylius_brand.twig.runtime.brand_admin"
+                 class="Madcoders\SyliusBrandPlugin\Twig\BrandAdminRuntime">
+            <argument type="service" id="madcoders_sylius_brand.provider.settings" />
+            <argument type="service" id="madcoders_sylius_brand.repository.product_by_brand" />
+
+            <tag name="twig.runtime" />
+            <tag name="kernel.reset" method="reset" />
+        </service>
+    </services>
+
+</container>

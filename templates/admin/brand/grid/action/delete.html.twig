@@ -1,0 +1,30 @@
+{# Delete confirmation that says what will actually happen.
+
+   The FK is ON DELETE SET NULL, so deleting a brand silently unbrands every product pointing at it
+   - and because the brand is derived state, nothing brings it back until somebody notices and
+   re-runs the resync. The count turns that from a surprise into a decision.
+
+   Mirrors @SyliusAdmin/shared/grid/action/delete.html.twig, overriding only the modal header. #}
+{% set id = options.link.parameters['id']|default(data.id) %}
+
+{% if options.link.url is defined %}
+    {% set path = options.link.url %}
+{% else %}
+    {% set default_route = options.link.route|default(grid.requestConfiguration is defined ? grid.requestConfiguration.getRouteName('delete') : null) %}
+    {% set path = options.link.url|default(default_route ? path(default_route, options.link.parameters|default({'id': data.id})) : null) %}
+{% endif %}
+
+{% set disabled = path is empty %}
+{% set product_count = madcoders_brand_product_count(data) %}
+
+{% component 'sylius_admin:delete_modal' with { id: id, path: path, label: action.label, icon: action.icon, disabled: disabled } %}
+    {% block header %}
+        <h1 class="modal-title py-5">{{ 'sylius.ui.are_your_sure_you_want_to_perform_this_action'|trans }}</h1>
+
+        {% if product_count > 0 %}
+            <div class="alert alert-warning mt-2 mb-0" {{ sylius_test_html_attribute('madcoders-brand-delete-warning') }}>
+                {{ 'madcoders_sylius_brand.ui.delete_warning'|trans({'%count%': product_count}) }}
+            </div>
+        {% endif %}
+    {% endblock %}
+{% endcomponent %}

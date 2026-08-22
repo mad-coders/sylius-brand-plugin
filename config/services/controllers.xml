@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="Madcoders\SyliusBrandPlugin\Controller\Shop\BrandController" public="true">
+            <argument type="service" id="twig" />
+            <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+            <argument type="service" id="madcoders_sylius_brand.repository.product_by_brand" />
+            <argument type="service" id="madcoders_sylius_brand.provider.settings" />
+            <argument type="service" id="sylius.context.channel" />
+            <argument type="service" id="sylius.context.locale" />
+        </service>
+    </services>
+
+</container>

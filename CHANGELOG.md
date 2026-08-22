@@ -1,0 +1,79 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- Project bootstrap: composer package, Sylius 2.x test application wiring, plugin bundle and
+  dependency injection extension.
+- Toolchain driven through Make: PHPStan (level max, no baseline), ECS, Rector, PHPUnit and Behat.
+- GitHub Actions CI: a fast static/unit job plus a Sylius/Symfony/database matrix built with
+  `SyliusLabs/BuildTestAppAction`.
+- Conventional Commits template and a pre-commit hook running the fast quality gate.
+- Project plan (`docs/PLAN.md`), architectural decision log (`docs/adr-log/`), agent and contributor
+  guides.
+- Brand domain model: `Brand` with a unique code, an enabled flag, a position, four display toggles
+  and a logo, plus translatable name, slug, description and SEO meta per locale.
+- Doctrine XML mapping, Sylius resource registration (translatable, with an image resource) and the
+  first migration, written against the Schema API so it runs on MySQL, MariaDB and PostgreSQL.
+- A `Product` extension trait carrying the resolved brand, denormalised onto
+  `sylius_product.brand_id` so "products of this brand" is an ordinary indexed query.
+- Configuration through [MonsieurBiz' Settings plugin](https://github.com/monsieurbiz/SyliusSettingsPlugin):
+  a feature toggle, the product attribute carrying the brand, and a value-to-brand mapping - all
+  editable in the admin, per channel. The section is prepended by the plugin's extension, so there
+  is no YAML for a host application to copy.
+- `BrandSettingsProvider`, the single reader of those settings: it narrows the settings plugin's
+  `mixed` returns, normalises mapping keys (trimmed, case-insensitive), and degrades to "feature
+  off" rather than throwing when the plugin is unconfigured.
+- `ProductBrandResolver`: resolves a product to a brand from its attribute value, routed through the
+  mapping and falling back to a 1:1 match. Handles text and select attributes, tries both a select
+  choice's key and its labels, and returns null rather than guessing.
+- `ProductBrandSynchronizer` - the only writer of `brand_id` - wired to `sylius.product.pre_create`
+  and `pre_update`, plus `bin/console madcoders:brand:resync-products` for imports, mapping changes
+  and anything else that writes products outside the resource layer.
+- Admin: a brand grid showing the logo, name, slug, code, description and where the brand is
+  displayed; create and update forms with translations and a logo upload; a Catalog menu entry; and
+  automatic slug generation that never overwrites an existing slug.
+- Shop: a brand overview at `/brands`, a paginated per-brand product listing at `/brands/{slug}`, a
+  homepage brand strip, a brand badge on the product page and a brand line on product tiles - each
+  switched on per brand, and all inert when the feature toggle is off.
+- LiipImagine filter sets for brand logos, using `inset` so a logo is never cropped.
+- Sylius fixtures for brands, wired into the default suite, covering the house brand, an
+  overview-only brand, a brand deliberately hidden from the overview and a disabled one.
+- Unit tests for the settings provider, the resolver, the synchronizer, the slug generator and the
+  model, and Behat coverage of the admin flow, the shop pages and attribute-based resolution.
+- Validation on the models rather than the form types, so fixtures and imports are held to the same
+  rules: a brand code is required, bounded, restricted to URL-safe characters and unique, and a slug
+  is unique per locale. A duplicate code or slug is a field error instead of a 500 at flush.
+- Slugs are generated inside the form, before validation runs, so the uniqueness constraint sees the
+  generated value; the resource-event listener still covers writes that never touch the form.
+- `madcoders:brand:resync-products` takes a lock, so a nightly cron and a deploy hook cannot walk
+  the catalogue at the same time; the second run exits immediately.
+- The settings split into two scopes and the split is now enforced, not just documented. `enabled`
+  stays per channel; `brand_attribute` and `brand_mapping` are global, are only offered on the "all
+  channels" tab, and are read with a null channel so a stale channel-scoped value is ignored.
+- Resolution no longer depends on the `enabled` toggle. That toggle is per channel and controls
+  display; gating resolution on it made the same product resolve differently in the admin than on
+  the CLI, and left `brand_id` stale while the feature was off.
+- Admin supportability: the product show page explains how a product got its brand - which attribute
+  is configured, what the product holds for it, what that maps to, and whether such a brand exists -
+  and the product grid gained a brand column and filter.
+- The brand grid shows how many products point at each brand, and the delete confirmation says how
+  many will be unbranded before you confirm.
+- Performance: product tiles resolve their brand from a set loaded once per page instead of
+  initialising a Doctrine proxy per tile, and the feature toggle and resolved channel are memoised.
+  Measured: reading the brand for every tile went from ~2 queries per tile to zero.
+
+### Notes for host applications
+
+- An application that supplies its own `BrandTranslation` entity **must** override
+  `Brand::createTranslation()`. See `docs/INSTALLATION.md`.
+- `brand_attribute` and `brand_mapping` are global settings, configured on the "all channels" tab.
+  A channel-scoped value is ignored.
+- Turning the feature off hides brands in the shop but does not stop products resolving, so no
+  resync is needed when switching it back on.

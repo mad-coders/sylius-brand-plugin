@@ -1,0 +1,36 @@
+imports:
+    - { resource: "@MonsieurBizSyliusSettingsPlugin/Resources/config/config.yaml" }
+    - { resource: "@MadcodersSyliusBrandPlugin/config/config.yaml" }
+    - { resource: "services_test.php" }
+
+# The plugin's models are mapped superclasses, so the application supplies the concrete entities -
+# exactly as a host application has to. See docs/INSTALLATION.md.
+doctrine:
+    orm:
+        entity_managers:
+            default:
+                mappings:
+                    TestApplication:
+                        is_bundle: false
+                        type: attribute
+                        dir: '%kernel.project_dir%/../../../tests/TestApplication/src/Entity'
+                        prefix: Tests\Madcoders\SyliusBrandPlugin\Entity
+
+sylius_resource:
+    resources:
+        madcoders_sylius_brand.brand:
+            classes:
+                model: Tests\Madcoders\SyliusBrandPlugin\Entity\Brand\Brand
+            translation:
+                classes:
+                    model: Tests\Madcoders\SyliusBrandPlugin\Entity\Brand\BrandTranslation
+        madcoders_sylius_brand.brand_image:
+            classes:
+                model: Tests\Madcoders\SyliusBrandPlugin\Entity\Brand\BrandImage
+
+# The Sylius model the plugin extends.
+sylius_product:
+    resources:
+        product:
+            classes:
+                model: Tests\Madcoders\SyliusBrandPlugin\Entity\Product\Product
