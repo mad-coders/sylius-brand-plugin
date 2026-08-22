@@ -45,7 +45,9 @@ See `docs/adr-log/0002-doctrine-xml-mapped-superclasses.md`.
   object directly. See the `Brand` class docblock.
 - Extensions to Sylius models ship as interface + trait pairs the host application applies.
 - Every schema change gets a migration in `src/Migrations/`, written against the **Schema API** (not
-  raw SQL) so it runs on MySQL, MariaDB and PostgreSQL. Never `doctrine:schema:update`.
+  raw SQL) so it stays platform-neutral. Never `doctrine:schema:update`. CI covers MySQL and
+  MariaDB; PostgreSQL is blocked by a dependency, so keep our own migrations neutral regardless -
+  the constraint is not ours and may go away.
 - Associations target interfaces, resolved through Sylius resource metadata.
 
 ## Services
@@ -75,8 +77,10 @@ needs an ADR.
 6. Every display toggle is additive: a toggle that is off hides the brand in that one place and
    changes nothing else. The single exception is documented -
    `displayOnBrandOverview` also gates the brand's own listing page.
-7. When the feature toggle is off the plugin is inert: shop routes 404, hooks render nothing, and
-   no brand is resolved on save.
+7. When the feature toggle is off the plugin is invisible: shop routes 404 and hooks render nothing.
+   Resolution deliberately keeps running, so `brand_id` stays correct and switching the feature back
+   on needs no resync - and so the same product cannot resolve differently per channel. The toggle
+   is per channel; resolution is global.
 
 ## Presentation
 

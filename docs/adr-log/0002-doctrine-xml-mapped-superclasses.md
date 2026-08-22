@@ -30,8 +30,9 @@ applies to *its own* entity class.
   configuration at it. `docs/INSTALLATION.md` carries the exact snippets.
 - Schema changes need a migration in `src/Migrations/`; there is no `doctrine:schema:update` path
   because the plugin does not own the tables.
-- Migrations are written against the **Schema API** rather than raw SQL, because CI runs MySQL,
-  MariaDB and PostgreSQL.
+- Migrations are written against the **Schema API** rather than raw SQL, so they stay
+  platform-neutral. CI runs MySQL and MariaDB; PostgreSQL is blocked by a dependency's MySQL-only
+  migration, not by ours.
 
 ## Rules
 

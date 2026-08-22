@@ -10,8 +10,10 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Creates the brand tables and adds the resolved brand to the product table.
  *
- * Written against the Schema API rather than raw SQL so the same migration works on MySQL, MariaDB
- * and PostgreSQL - all three are covered by CI.
+ * Written against the Schema API rather than raw SQL, so it is platform-neutral. CI covers MySQL and
+ * MariaDB; PostgreSQL is not currently reachable because a hard dependency
+ * (monsieurbiz/sylius-settings-plugin) ships MySQL-only DDL in its own migration and fails first.
+ * Keeping this one neutral costs nothing and means the plugin is ready the day that is fixed.
  *
  * Indexes carry the names Doctrine's ORM derives from the table and column names rather than
  * readable ones, so that `doctrine:schema:validate` reports a host application in sync after

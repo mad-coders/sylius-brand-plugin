@@ -20,7 +20,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Brand domain model: `Brand` with a unique code, an enabled flag, a position, four display toggles
   and a logo, plus translatable name, slug, description and SEO meta per locale.
 - Doctrine XML mapping, Sylius resource registration (translatable, with an image resource) and the
-  first migration, written against the Schema API so it runs on MySQL, MariaDB and PostgreSQL.
+  first migration, written against the Schema API so it stays platform-neutral. Supported databases
+  are MySQL and MariaDB; PostgreSQL is blocked by MySQL-only DDL in the settings plugin's own
+  migration, not by anything here.
 - A `Product` extension trait carrying the resolved brand, denormalised onto
   `sylius_product.brand_id` so "products of this brand" is an ordinary indexed query.
 - Configuration through [MonsieurBiz' Settings plugin](https://github.com/monsieurbiz/SyliusSettingsPlugin):
