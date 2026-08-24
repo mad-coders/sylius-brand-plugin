@@ -7,6 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0-RC.1] - 2026-08-24
+
+First release candidate. Verified on PHP 8.3 across Sylius ~2.0, ~2.1 and ~2.2, Symfony ^6.4 and
+^7.4, on MySQL 8.4 and MariaDB 11.4.
+
 ### Added
 
 - Project bootstrap: composer package, Sylius 2.x test application wiring, plugin bundle and

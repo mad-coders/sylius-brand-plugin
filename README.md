@@ -8,8 +8,13 @@ badges on the product page and product tiles - driven by a product attribute you
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-blue.svg" alt="License"></a>
 </p>
 
-> **Status: in development.** The 1.0 line is being built phase by phase - see
-> [`docs/PLAN.md`](docs/PLAN.md) for the roadmap and what has landed.
+> **Status: 1.0 release candidate.** Functionally complete and green across the supported
+> Sylius/Symfony/database matrix. The API - service ids, settings paths, table names - is frozen for
+> 1.0; what it still wants is real-world use. Please report anything you hit.
+>
+> ```bash
+> composer require madcoders/sylius-brand-plugin:^1.0@RC
+> ```
 
 ## What it does
 
