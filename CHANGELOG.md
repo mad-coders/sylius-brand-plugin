@@ -7,6 +7,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0-RC.2] - 2026-08-25
+
+Second release candidate. Makes the brand hookable reusable on any product grid, and closes the
+regression-coverage gaps that RC.1 shipped with.
+
 ### Added
 
 - The shop brand hookable is configurable and reusable: attach

@@ -15,6 +15,9 @@ badges on the product page and product tiles - driven by a product attribute you
 > ```bash
 > composer require madcoders/sylius-brand-plugin:^1.0@RC
 > ```
+>
+> The brand hookable is reusable on your own product grids - see
+> [Putting brands on your own product grids](#putting-brands-on-your-own-product-grids).
 
 ## What it does
 
