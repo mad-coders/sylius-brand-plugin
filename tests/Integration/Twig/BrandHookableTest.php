@@ -52,6 +52,7 @@ final class BrandHookableTest extends KernelTestCase
         $this->entityManager->beginTransaction();
 
         $this->provideChannelAndLocale();
+        $this->pinRouterLocale();
         $this->enableFeature();
     }
 
@@ -124,7 +125,13 @@ final class BrandHookableTest extends KernelTestCase
     {
         $product = $this->createProductWithBrand('nike-link', 'Nike');
 
-        self::assertStringContainsString('<a ', $this->render(['product' => $product], ['link' => true]));
+        $linked = $this->render(['product' => $product], ['link' => true]);
+
+        self::assertStringContainsString('<a ', $linked);
+        // Proves the locale-prefixed shop route really was generated, rather than the test passing
+        // because some Symfony version quietly filled `_locale` in for us.
+        self::assertStringContainsString(\sprintf('/%s/brands/', $this->localeCode), $linked);
+
         self::assertStringNotContainsString('<a ', $this->render(['product' => $product], ['link' => false]));
     }
 
@@ -244,6 +251,20 @@ final class BrandHookableTest extends KernelTestCase
         /** @var LocaleInterface $createdLocale */
         $createdLocale = $created['locale'];
         $this->localeCode = (string) $createdLocale->getCode();
+    }
+
+    /**
+     * Pins `_locale` on the router context.
+     *
+     * The brand link is a shop route, and shop routes are prefixed `/{_locale}`. Inside a request
+     * that parameter comes from the request attributes; there is no request here, so generating
+     * the URL depends on whether the Symfony version happens to fall back to a default - 7.4 does,
+     * 6.4 raises MissingMandatoryParametersException. Setting it explicitly makes the test say what
+     * it means instead of relying on that difference.
+     */
+    private function pinRouterLocale(): void
+    {
+        self::getContainer()->get('router')->getContext()->setParameter('_locale', $this->localeCode);
     }
 
     private function enableFeature(): void
