@@ -29,6 +29,9 @@ badges on the product page and product tiles - driven by a product attribute you
 - **Shop pages.** A brand overview at `/brands`, a per-brand product listing at `/brands/{slug}`,
   a brand strip on the homepage, a brand badge on the product page and on product tiles - each one
   switched on per brand.
+- **Reusable on your own grids.** The brand hookable is configurable, so you can attach it to any
+  hook that has a product in context without copying a template - see
+  [below](#putting-brands-on-your-own-product-grids). Twig helpers are provided for custom markup.
 - **One feature toggle.** The whole feature can be turned off from the admin without touching
   configuration files or removing the bundle.
 
@@ -89,6 +92,69 @@ Admin → Settings → **Brands**:
 The last two are global on purpose: a product has one `brand_id`, so a per-channel attribute would
 have no single right answer. They are only offered on the "all channels" tab, and a channel-scoped
 value left behind by an older install is ignored.
+
+## Putting brands on your own product grids
+
+The plugin ships the brand on three surfaces out of the box - the homepage strip, the product page
+and Sylius' product card. Anywhere else - a custom listing, search results, a cross-sell carousel,
+your own theme's card - you attach it yourself. There is nothing to copy: the same template the
+plugin uses is configurable, so you point a hook at it and pass configuration.
+
+```yaml
+# config/packages/madcoders_sylius_brand.yaml
+sylius_twig_hooks:
+    hooks:
+        # any hook that has a product in its context
+        'sylius_shop.product.index.content.body.main.products':
+            madcoders_brand:
+                template: '@MadcodersSyliusBrandPlugin/shop/product/brand.html.twig'
+                configuration:
+                    surface: product_tile
+                priority: 50
+```
+
+| configuration | default | what it does |
+|---|---|---|
+| `context_key` | `product` | where the product lives in the hook's context, if it isn't called `product` |
+| `surface` | `product_tile` | which display toggle to respect: `homepage`, `product_page`, `product_tile`, `brand_overview`, or `any` to ignore the toggles |
+| `show_logo` | `false` | render the logo before the name |
+| `link` | `true` | link to the brand page (falls back to plain text when that brand's page is not reachable) |
+| `label` | `false` | prefix with a translated "Brand:" label |
+| `class` | muted small line | CSS classes for the wrapper |
+| `link_class` | `fw-semibold text-reset` | CSS classes for the name itself |
+
+The template renders **nothing** when the feature is off, the product has no brand, the brand is
+disabled, or that brand's toggle for the chosen surface is off - so you never have to guard the hook
+yourself.
+
+### Twig helpers
+
+If you want your own markup, use the helpers directly. These are public API.
+
+| function | returns |
+|---|---|
+| `madcoders_brand_for(product, surface = 'product_tile')` | the brand to show for that product on that surface, or `null` |
+| `madcoders_brands_enabled()` | whether the feature is on for the current channel |
+| `madcoders_homepage_brands(limit = 12)` | brands flagged for the homepage, ordered by position |
+
+```twig
+{% set brand = madcoders_brand_for(product, 'any') %}
+{% if brand is not null %}
+    <a href="{{ path('madcoders_sylius_brand_shop_brand_show', { slug: brand.slug }) }}">{{ brand.name }}</a>
+{% endif %}
+```
+
+**Use `madcoders_brand_for()` rather than reading `product.brand`.** It applies the feature toggle,
+the brand's enabled flag and the surface toggle for you - and, less obviously, it answers every row
+of a listing from a single query. Reading `product.brand` directly initialises a Doctrine proxy per
+row and loads the brand *and* its translation, which on a 12-product grid is up to 24 extra queries.
+
+### Admin helpers
+
+| function | returns |
+|---|---|
+| `madcoders_brand_product_count(brand)` | how many products point at that brand |
+| `madcoders_brand_diagnostics(product)` | the resolution chain: configured attribute, the product's value for it, what it maps to, and the resulting brand |
 
 ## Development
 

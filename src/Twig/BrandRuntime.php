@@ -20,11 +20,11 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
     private const int DEFAULT_HOMEPAGE_LIMIT = 12;
 
     /**
-     * Every tile-displayable brand, indexed by id, loaded at most once per request.
+     * Displayable brands per surface, indexed by id, each surface loaded at most once per request.
      *
-     * @var array<int, BrandInterface>|null
+     * @var array<string, array<int, BrandInterface>>
      */
-    private ?array $tileBrands = null;
+    private array $brandsBySurface = [];
 
     public function __construct(
         private readonly BrandSettingsProviderInterface $settings,
@@ -40,7 +40,7 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
 
     public function reset(): void
     {
-        $this->tileBrands = null;
+        $this->brandsBySurface = [];
     }
 
     /**
@@ -56,20 +56,26 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
     }
 
     /**
-     * The brand to show on a product tile, or null when there is nothing to show.
+     * The brand to show for a product on a given surface, or null when there is nothing to show.
      *
-     * This exists to kill an N+1. Reading `$product->getBrand()` in the template returns an
+     * The public entry point for host applications putting brands on their own listings - see the
+     * README. It applies every rule the templates would otherwise have to repeat: the feature
+     * toggle, the brand's own enabled flag, and the display toggle for that surface. Pass
+     * `BrandInterface::SURFACE_ANY` to ignore the surface toggles.
+     *
+     * It also exists to kill an N+1. Reading `$product->getBrand()` in a template returns an
      * uninitialised Doctrine proxy, and touching anything on it beyond the identifier - the name,
-     * the toggles - loads the brand, plus its translation, once per tile. On a 12-product listing
+     * the toggles - loads the brand *and* its translation, once per row. On a 12-product listing
      * that is up to 24 extra queries.
      *
-     * Getting the **identifier** off a proxy is free: Doctrine already has it, and does not
-     * initialise for it. So the whole displayable set is loaded once (with translations and images
-     * joined) and each tile is answered from that map. One query per page, regardless of how many
-     * tiles there are, and brands that are disabled or not flagged for tiles simply are not in the
-     * map - which is also the filtering the template would otherwise do by hand.
+     * Getting the **identifier** off a proxy is free: Doctrine already has it and does not
+     * initialise for it. So the displayable set for the surface is loaded once, with translations
+     * and images joined, and every row is answered from that map. One query per surface per
+     * request, however many rows there are.
+     *
+     * @param string $surface one of BrandInterface::SURFACE_*
      */
-    public function getTileBrand(mixed $product): ?BrandInterface
+    public function getBrandFor(mixed $product, string $surface = BrandInterface::SURFACE_PRODUCT_TILE): ?BrandInterface
     {
         if (!$product instanceof BrandAwareProductInterface || !$this->settings->isEnabled()) {
             return null;
@@ -89,10 +95,11 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
             return null;
         }
 
-        $this->tileBrands ??= $this->brandRepository->findAllDisplayedOnProductTiles(
+        $this->brandsBySurface[$surface] ??= $this->brandRepository->findAllDisplayedOn(
+            $surface,
             $this->localeContext->getLocaleCode(),
         );
 
-        return $this->tileBrands[$id] ?? null;
+        return $this->brandsBySurface[$surface][$id] ?? null;
     }
 }

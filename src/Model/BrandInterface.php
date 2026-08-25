@@ -29,6 +29,24 @@ interface BrandInterface extends
     /** The image type carried by a brand's logo. */
     public const LOGO_IMAGE_TYPE = 'logo';
 
+    /**
+     * The shop surfaces a brand can be shown on, each gated by its own toggle.
+     *
+     * These are the values a host application passes to `madcoders_brand_for()` and to the
+     * `surface` configuration of the plugin's hookable template, so they are public API. See the
+     * README section on putting brands on your own product grids.
+     */
+    public const SURFACE_HOMEPAGE = 'homepage';
+
+    public const SURFACE_PRODUCT_PAGE = 'product_page';
+
+    public const SURFACE_PRODUCT_TILE = 'product_tile';
+
+    public const SURFACE_BRAND_OVERVIEW = 'brand_overview';
+
+    /** Not a surface: "ignore the display toggles, the brand's enabled flag still applies". */
+    public const SURFACE_ANY = 'any';
+
     public function getId(): ?int;
 
     /** Ordering on the brand overview page; lower comes first. */

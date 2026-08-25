@@ -92,7 +92,13 @@ needs an ADR.
   `translations/messages.en.yaml`; other locales are added as translations land.
 - Grids and routes in YAML under `config/grids/` and `config/routes/`.
 - Every shop-side hook template must render nothing when the feature is off or the brand's toggle
-  for that surface is off. Check the toggle in the template, not only in the service.
+  for that surface is off. `madcoders_brand_for()` applies all of that, so templates call it rather
+  than reading `product.brand`, which would also reintroduce an N+1.
+- **The shop brand hookable is public API and stays configurable.** A host attaches
+  `@MadcodersSyliusBrandPlugin/shop/product/brand.html.twig` to its own hooks and drives it through
+  `hookable_metadata.configuration`. New presentation options go there as a documented key with a
+  default that preserves current output - never as a second near-identical template. The plugin's
+  own hooks configure that same template, which is what keeps it honest.
 
 ## Tests
 

@@ -116,14 +116,37 @@ class BrandRepository extends EntityRepository implements BrandRepositoryInterfa
         return $brands;
     }
 
-    public function findAllDisplayedOnProductTiles(string $localeCode): array
+    public function findAllDisplayedOn(string $surface, string $localeCode): array
     {
+        $queryBuilder = $this->createEnabledListQueryBuilder($localeCode);
+
+        // Whitelisted rather than interpolated: `surface` reaches here from host-supplied hook
+        // configuration, and a field name concatenated into DQL is how that becomes an injection.
+        $field = match ($surface) {
+            BrandInterface::SURFACE_ANY => null,
+            BrandInterface::SURFACE_HOMEPAGE => 'displayOnHomepage',
+            BrandInterface::SURFACE_PRODUCT_PAGE => 'displayOnProductPage',
+            BrandInterface::SURFACE_PRODUCT_TILE => 'displayOnProductTile',
+            BrandInterface::SURFACE_BRAND_OVERVIEW => 'displayOnBrandOverview',
+            default => throw new \InvalidArgumentException(\sprintf(
+                'Unknown brand surface "%s". Use one of: %s.',
+                $surface,
+                implode(', ', [
+                    BrandInterface::SURFACE_ANY,
+                    BrandInterface::SURFACE_HOMEPAGE,
+                    BrandInterface::SURFACE_PRODUCT_PAGE,
+                    BrandInterface::SURFACE_PRODUCT_TILE,
+                    BrandInterface::SURFACE_BRAND_OVERVIEW,
+                ]),
+            )),
+        };
+
+        if (null !== $field) {
+            $queryBuilder->andWhere(\sprintf('o.%s = true', $field));
+        }
+
         /** @var array<array-key, BrandInterface> $brands */
-        $brands = $this->createEnabledListQueryBuilder($localeCode)
-            ->andWhere('o.displayOnProductTile = true')
-            ->getQuery()
-            ->getResult()
-        ;
+        $brands = $queryBuilder->getQuery()->getResult();
 
         $indexed = [];
 

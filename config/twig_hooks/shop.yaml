@@ -1,3 +1,9 @@
+# The plugin's own hookables.
+#
+# Note that the product-page badge and the product-tile label are the *same* template, configured
+# differently - which is the point: a host application can attach that template to any hook that has
+# a product in context, with its own configuration, without copying a file. See the README section
+# "Putting brands on your own product grids".
 sylius_twig_hooks:
     hooks:
         # A strip of brand logos on the homepage, between the banner (300) and the latest deals
@@ -12,13 +18,21 @@ sylius_twig_hooks:
         # shopper looks for the maker.
         'sylius_shop.product.show.content.info.summary':
             madcoders_brand:
-                template: '@MadcodersSyliusBrandPlugin/shop/product/show/brand.html.twig'
+                template: '@MadcodersSyliusBrandPlugin/shop/product/brand.html.twig'
+                configuration:
+                    surface: product_page
+                    show_logo: true
+                    label: true
                 priority: 450
 
         # The brand line on a product tile. Sylius' card details hook renders the image at 100 and
         # the name at 0; 50 puts the brand between them, which is the conventional place for it in
-        # a product grid.
+        # a product grid. No logo: a tile already carries a product image, and a second one
+        # competes with it.
         'sylius_shop.shared.product.card.details':
             madcoders_brand:
-                template: '@MadcodersSyliusBrandPlugin/shop/product/card/brand.html.twig'
+                template: '@MadcodersSyliusBrandPlugin/shop/product/brand.html.twig'
+                configuration:
+                    surface: product_tile
+                    class: 'text-muted small text-uppercase'
                 priority: 50

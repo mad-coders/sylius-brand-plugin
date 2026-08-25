@@ -53,3 +53,19 @@ Feature: Browsing brands in the shop
         And brands are disabled in the settings
         When I try to browse the brand overview page
         Then I should be told that the page does not exist
+
+    @ui
+    Scenario: Seeing the brand on the product tiles of a listing
+        Given the store has a brand "Nike" with code "nike"
+        And the brand "Nike" is displayed on product tiles
+        And the store has a product "Running Shoes" of the brand "nike"
+        When I open the page of the brand "Nike"
+        Then the product tiles should show the brand "Nike"
+
+    @ui
+    Scenario: The tile toggle keeps the brand off the tiles
+        Given the store has a brand "Nike" with code "nike"
+        And the store has a product "Running Shoes" of the brand "nike"
+        When I open the page of the brand "Nike"
+        Then I should see the product "Running Shoes"
+        And the product tiles should not show the brand "Nike"

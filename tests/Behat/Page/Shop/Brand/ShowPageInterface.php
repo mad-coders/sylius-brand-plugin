@@ -12,4 +12,11 @@ interface ShowPageInterface extends ShopPageInterface
 
     /** @return list<string> */
     public function getListedProductCodes(): array;
+
+    /**
+     * Brand codes rendered by the plugin's hookable on the product tiles of this page.
+     *
+     * @return list<string>
+     */
+    public function getTileBrandCodes(): array;
 }

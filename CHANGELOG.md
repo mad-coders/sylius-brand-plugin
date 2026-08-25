@@ -7,6 +7,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The shop brand hookable is configurable and reusable: attach
+  `@MadcodersSyliusBrandPlugin/shop/product/brand.html.twig` to any hook that has a product in
+  context and drive it through `hookable_metadata.configuration` (`context_key`, `surface`,
+  `show_logo`, `link`, `label`, `class`, `link_class`). The plugin's own product-page badge and
+  product-tile label are now that same template with different configuration.
+- `madcoders_brand_for(product, surface)` replaces the internal tile helper and is documented as
+  public API, alongside `madcoders_brands_enabled()` and `madcoders_homepage_brands()`. It applies
+  the feature toggle, the brand's enabled flag and the surface toggle, and answers a whole listing
+  from one query.
+- README section "Putting brands on your own product grids", with the configuration table and the
+  helper reference.
+
+### Changed
+
+- `templates/shop/product/card/brand.html.twig` and `templates/shop/product/show/brand.html.twig`
+  are consolidated into `templates/shop/product/brand.html.twig`. A host that re-pointed a hook at
+  either of the old paths needs to switch to the new one and pass `configuration`.
+- The shop-side test attribute is now `data-test-madcoders-product-brand="<brand code>"` on both
+  surfaces, replacing the separate tile and product-page markers.
+
 ## [1.0.0-RC.1] - 2026-08-24
 
 First release candidate. Verified on PHP 8.3 across Sylius ~2.0, ~2.1 and ~2.2, Symfony ^6.4 and

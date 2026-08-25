@@ -99,6 +99,25 @@ final class BrandContext implements Context
     }
 
     /**
+     * @Then the product tiles should show the brand :name
+     */
+    public function theProductTilesShouldShowTheBrand(string $name): void
+    {
+        Assert::inArray($this->getBrandCode($name), $this->showPage->getTileBrandCodes());
+    }
+
+    /**
+     * @Then the product tiles should not show the brand :name
+     */
+    public function theProductTilesShouldNotShowTheBrand(string $name): void
+    {
+        Assert::false(
+            \in_array($this->getBrandCode($name), $this->showPage->getTileBrandCodes(), true),
+            \sprintf('The brand "%s" is shown on a product tile but should not be.', $name),
+        );
+    }
+
+    /**
      * @Then I should be told that the page does not exist
      */
     public function iShouldBeToldThatThePageDoesNotExist(): void

@@ -35,6 +35,23 @@ final class ShowPage extends ShopPage implements ShowPageInterface
         return $codes;
     }
 
+    public function getTileBrandCodes(): array
+    {
+        $codes = [];
+
+        // The plugin's configurable brand hookable stamps the brand code on every surface it
+        // renders, so the same assertion works wherever a host attaches it.
+        foreach ($this->getDocument()->findAll('css', '[data-test-madcoders-product-brand]') as $element) {
+            $code = $element->getAttribute('data-test-madcoders-product-brand');
+
+            if (null !== $code) {
+                $codes[] = $code;
+            }
+        }
+
+        return $codes;
+    }
+
     protected function getDefinedElements(): array
     {
         return array_merge(parent::getDefinedElements(), [

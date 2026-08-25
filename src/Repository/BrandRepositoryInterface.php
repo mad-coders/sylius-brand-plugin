@@ -42,14 +42,18 @@ interface BrandRepositoryInterface extends RepositoryInterface
     public function findAllForHomepage(string $localeCode, ?int $limit = null): array;
 
     /**
-     * Every enabled brand that may appear on a product tile, indexed by id.
+     * Every enabled brand that may appear on the given surface, indexed by id.
      *
      * Indexed by id because that is what a product carries: reading `$product->getBrand()->getId()`
-     * on an uninitialised Doctrine proxy costs nothing, so a tile can find its brand in this map
-     * without ever loading the brand itself. That is what turns one query per tile into one query
-     * per page - see BrandRuntime::getTileBrand().
+     * on an uninitialised Doctrine proxy costs nothing, so a listing can find each row's brand in
+     * this map without ever loading a brand. That is what turns one query per tile into one query
+     * per page - see BrandRuntime::getBrandFor().
+     *
+     * @param string $surface one of BrandInterface::SURFACE_*; SURFACE_ANY applies no toggle filter
+     *
+     * @throws \InvalidArgumentException on an unknown surface
      *
      * @return array<int, BrandInterface>
      */
-    public function findAllDisplayedOnProductTiles(string $localeCode): array;
+    public function findAllDisplayedOn(string $surface, string $localeCode): array;
 }

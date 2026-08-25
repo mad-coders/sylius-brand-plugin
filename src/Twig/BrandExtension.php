@@ -20,7 +20,7 @@ final class BrandExtension extends AbstractExtension
         return [
             new TwigFunction('madcoders_brands_enabled', [BrandRuntime::class, 'isEnabled']),
             new TwigFunction('madcoders_homepage_brands', [BrandRuntime::class, 'getHomepageBrands']),
-            new TwigFunction('madcoders_tile_brand', [BrandRuntime::class, 'getTileBrand']),
+            new TwigFunction('madcoders_brand_for', [BrandRuntime::class, 'getBrandFor']),
         ];
     }
 }
