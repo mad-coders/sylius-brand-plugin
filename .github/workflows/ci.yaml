@@ -141,7 +141,8 @@ jobs:
                 run: php -d memory_limit=-1 vendor/bin/console lint:container
 
             -   name: Run non-unit PHPUnit tests
-                run: vendor/bin/phpunit --colors=always --testsuite=non-unit
+                # Booting the full Sylius container exceeds the default CLI memory_limit.
+                run: php -d memory_limit=-1 vendor/bin/phpunit --colors=always --testsuite=non-unit
 
             -   name: Run Behat
                 run: vendor/bin/behat --colors --strict -vvv --no-interaction -f progress || vendor/bin/behat --colors --strict -vvv --no-interaction -f progress --rerun

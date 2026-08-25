@@ -89,13 +89,16 @@ app: docker-up frontend db-reset fixtures ## Spin up the local app: docker + ass
 test: phpunit behat ## Run PHPUnit and the non-JS Behat suite
 
 phpunit: ## Run the full PHPUnit suite
-	vendor/bin/phpunit --colors=always
+	# Booting the full Sylius container exceeds the default CLI memory_limit, the same way
+	# lint:container and PHPStan do. Without this the run dies with an out-of-memory fatal that
+	# names a random compiled container file and looks nothing like a test failure.
+	php -d memory_limit=-1 vendor/bin/phpunit --colors=always
 
 phpunit-unit: ## Run the unit tests only (no database, no kernel boot)
 	vendor/bin/phpunit --colors=always --testsuite=unit
 
 phpunit-non-unit: ## Run the functional and integration tests (needs a database)
-	vendor/bin/phpunit --colors=always --testsuite=non-unit
+	php -d memory_limit=-1 vendor/bin/phpunit --colors=always --testsuite=non-unit
 
 behat: ## Run the non-JavaScript Behat suite
 	$(BEHAT) --tags="~@javascript"

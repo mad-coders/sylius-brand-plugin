@@ -69,3 +69,20 @@ Feature: Browsing brands in the shop
         When I open the page of the brand "Nike"
         Then I should see the product "Running Shoes"
         And the product tiles should not show the brand "Nike"
+
+    @ui
+    Scenario: Seeing the brand strip on the homepage
+        Given the store has a brand "Nike" with code "nike"
+        And the brand "Nike" is displayed on the homepage
+        And the store has a brand "Adidas" with code "adidas"
+        When I browse the homepage
+        Then the homepage should show the brand "Nike"
+        And the homepage should not show the brand "Adidas"
+
+    @ui
+    Scenario: The homepage strip is gone when the feature is turned off
+        Given the store has a brand "Nike" with code "nike"
+        And the brand "Nike" is displayed on the homepage
+        And brands are disabled in the settings
+        When I browse the homepage
+        Then the homepage should not show the brand "Nike"

@@ -16,17 +16,21 @@
    Renders nothing at all when the feature is off, the product has no brand, the brand is disabled,
    or the brand's toggle for this surface is off. `madcoders_brand_for()` applies all of that, and
    answers every row of a listing from one query. #}
+{# `??` throughout, never `|default()`: Twig's default filter substitutes whenever the value is
+   *empty*, and `false` is empty - so `link: false` would silently be read back as `true`. The
+   null-coalescing operator only substitutes when the key is absent, which is what "has the host
+   configured this?" actually means. #}
 {% set config = hookable_metadata.configuration|default({}) %}
-{% set context_key = config.context_key|default('product') %}
+{% set context_key = config.context_key ?? 'product' %}
 
-{% set product = attribute(_context, context_key)|default(hookable_metadata.context[context_key]|default(null)) %}
-{% set brand = madcoders_brand_for(product, config.surface|default('product_tile')) %}
+{% set product = attribute(_context, context_key) ?? hookable_metadata.context[context_key] ?? null %}
+{% set brand = madcoders_brand_for(product, config.surface ?? 'product_tile') %}
 
 {% if brand is not null %}
-    {% set show_logo = config.show_logo|default(false) %}
+    {% set show_logo = config.show_logo ?? false %}
     {% set logo = show_logo ? brand.logo : null %}
 
-    <div class="{{ config.class|default('d-flex align-items-center gap-2 text-muted small') }}"
+    <div class="{{ config.class ?? 'd-flex align-items-center gap-2 text-muted small' }}"
          {{ sylius_test_html_attribute('madcoders-product-brand', brand.code) }}>
         {% if logo is not null and logo.path is not null %}
             <img src="{{ logo.path|imagine_filter('madcoders_sylius_brand_logo_thumbnail') }}"
@@ -35,17 +39,17 @@
                  loading="lazy">
         {% endif %}
 
-        {% if config.label|default(false) %}
+        {% if config.label ?? false %}
             <span>{{ 'madcoders_sylius_brand.ui.brand'|trans }}:</span>
         {% endif %}
 
-        {% if config.link|default(true) %}
+        {% if config.link ?? true %}
             {% include '@MadcodersSyliusBrandPlugin/shop/brand/_link.html.twig' with {
                 brand: brand,
-                class: config.link_class|default('fw-semibold text-reset'),
+                class: config.link_class ?? 'fw-semibold text-reset',
             } only %}
         {% else %}
-            <span class="{{ config.link_class|default('fw-semibold') }}">{{ brand.name }}</span>
+            <span class="{{ config.link_class ?? 'fw-semibold' }}">{{ brand.name }}</span>
         {% endif %}
     </div>
 {% endif %}

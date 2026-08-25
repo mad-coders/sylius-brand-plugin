@@ -12,6 +12,7 @@ use Sylius\Component\Core\Formatter\StringInflector;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\Brand\IndexPageInterface;
 use Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\Brand\ShowPageInterface;
+use Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\HomePageInterface;
 use Webmozart\Assert\Assert;
 
 final class BrandContext implements Context
@@ -21,6 +22,7 @@ final class BrandContext implements Context
     public function __construct(
         private readonly IndexPageInterface $indexPage,
         private readonly ShowPageInterface $showPage,
+        private readonly HomePageInterface $homePage,
         private readonly BrandRepositoryInterface $brandRepository,
     ) {
     }
@@ -95,6 +97,33 @@ final class BrandContext implements Context
         Assert::false(
             \in_array(StringInflector::nameToUppercaseCode($name), $this->showPage->getListedProductCodes(), true),
             \sprintf('The product "%s" is listed on the brand page but should not be.', $name),
+        );
+    }
+
+    /**
+     * @When I browse the homepage
+     */
+    public function iBrowseTheHomepage(): void
+    {
+        $this->homePage->open();
+    }
+
+    /**
+     * @Then the homepage should show the brand :name
+     */
+    public function theHomepageShouldShowTheBrand(string $name): void
+    {
+        Assert::inArray($this->getBrandCode($name), $this->homePage->getStripBrandCodes());
+    }
+
+    /**
+     * @Then the homepage should not show the brand :name
+     */
+    public function theHomepageShouldNotShowTheBrand(string $name): void
+    {
+        Assert::false(
+            \in_array($this->getBrandCode($name), $this->homePage->getStripBrandCodes(), true),
+            \sprintf('The brand "%s" is in the homepage strip but should not be.', $name),
         );
     }
 

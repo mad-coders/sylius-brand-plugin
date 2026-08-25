@@ -20,6 +20,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   from one query.
 - README section "Putting brands on your own product grids", with the configuration table and the
   helper reference.
+- Integration coverage for the hookable's configuration surface - including `context_key`, the one
+  option the plugin's own hooks never exercise - rendering the real template through Twig. The suite
+  provisions its own channel and locale, so it does not depend on fixtures having been loaded first.
+- Behat coverage for all three shop surfaces: the homepage strip, the product tile and their
+  toggles, including that each renders nothing when the feature is off.
+
+### Fixed
+
+- `link: false` on the brand hookable was ignored. Twig's `default` filter substitutes on any
+  *empty* value, and `false` is empty, so it read back as `true`. Every configuration option now
+  uses `??`, which only substitutes when the key is absent.
+- `make phpunit` and `make phpunit-non-unit` (and the CI step) raise the memory limit. Booting the
+  full Sylius container exceeds the default, and the run died with an out-of-memory fatal naming a
+  compiled container file rather than anything resembling a test failure.
 
 ### Changed
 

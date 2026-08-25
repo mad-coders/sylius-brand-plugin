@@ -19,7 +19,8 @@
                 <div class="col">
                     <a href="{{ path('madcoders_sylius_brand_shop_brand_show', { slug: brand.slug }) }}"
                        class="d-flex align-items-center justify-content-center h-100 p-3 border rounded text-decoration-none text-center"
-                       title="{{ brand.name }}">
+                       title="{{ brand.name }}"
+                       {{ sylius_test_html_attribute('madcoders-brand', brand.code) }}>
                         {% if brand.logo is not null and brand.logo.path is not null %}
                             <img src="{{ brand.logo.path|imagine_filter('madcoders_sylius_brand_logo_tile') }}"
                                  alt="{{ brand.name }}"

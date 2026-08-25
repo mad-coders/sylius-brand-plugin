@@ -90,6 +90,7 @@
                  class="Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Ui\Shop\BrandContext">
             <argument type="service" id="madcoders_sylius_brand.behat.page.shop.brand.index" />
             <argument type="service" id="madcoders_sylius_brand.behat.page.shop.brand.show" />
+            <argument type="service" id="madcoders_sylius_brand.behat.page.shop.home" />
             <argument type="service" id="madcoders_sylius_brand.repository.brand" />
         </service>
 
@@ -101,6 +102,11 @@
         <service id="madcoders_sylius_brand.behat.page.shop.brand.show"
                  class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\Brand\ShowPage"
                  parent="sylius.behat.page.shop.page"
+                 public="false" />
+
+        <service id="madcoders_sylius_brand.behat.page.shop.home"
+                 class="Tests\Madcoders\SyliusBrandPlugin\Behat\Page\Shop\HomePage"
+                 parent="sylius.behat.symfony_page"
                  public="false" />
     </services>
 
