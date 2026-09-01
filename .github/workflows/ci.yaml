@@ -87,6 +87,37 @@ jobs:
             -   name: Unit tests
                 run: vendor/bin/phpunit --colors=always --testsuite=unit
 
+    lowest:
+        name: "Lowest supported dependencies"
+        runs-on: ubuntu-latest
+
+        # Resolves every constraint in composer.json at its floor. Without this the declared lower
+        # bounds are assertions rather than tested facts: monsieurbiz/sylius-settings-plugin ^2.0
+        # is the plugin's tightest coupling (registry, alias, SettingProvider, cache pool) and
+        # symfony/lock ^6.4 is never otherwise resolved below the newest release.
+        steps:
+            -   uses: actions/checkout@v7
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: "8.3"
+                    extensions: intl, gd, opcache, pdo_mysql
+                    tools: composer:v2
+                    coverage: none
+
+            -   name: Install lowest dependencies
+                run: composer update --no-interaction --no-progress --prefer-dist --prefer-lowest --prefer-stable
+
+            -   name: Show resolved versions
+                run: composer show --direct
+
+            -   name: PHPStan
+                run: vendor/bin/phpstan analyse -c phpstan.neon --no-progress --memory-limit=-1
+
+            -   name: Unit tests
+                run: vendor/bin/phpunit --colors=always --testsuite=unit
+
     tests:
         name: "Sylius ${{ matrix.sylius }}, PHP ${{ matrix.php }}, Symfony ${{ matrix.symfony }}, ${{ matrix.database }}"
         runs-on: ubuntu-latest
@@ -109,6 +140,16 @@ jobs:
                         symfony: "^7.4"
                         sylius: "~2.2.0"
                         database: "mariadb:11.4"
+                        node: "22.x"
+
+                    # composer.json declares php ^8.3, and most new deployments run 8.4. Without
+                    # this leg the upper half of the declared range ships untested - and the
+                    # dependency graph genuinely differs there (doctrine/instantiator 2.1.0
+                    # requires ^8.4, so 8.3 and 8.4 do not resolve to the same tree).
+                    -   php: "8.4"
+                        symfony: "^7.4"
+                        sylius: "~2.2.0"
+                        database: "mysql:8.4"
                         node: "22.x"
 
                     # No PostgreSQL. Not a limitation of this plugin - its own migration is written

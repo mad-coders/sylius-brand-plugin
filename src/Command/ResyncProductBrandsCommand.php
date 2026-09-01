@@ -15,6 +15,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Lock\LockFactory;
 
 /**
  * Rebuilds `sylius_product.brand_id` for the whole catalogue.
@@ -34,14 +35,27 @@ final class ResyncProductBrandsCommand extends Command
 
     private const int DEFAULT_BATCH_SIZE = 200;
 
-    /** @param class-string $productClass */
+    /**
+     * The lock factory is injected rather than left to `LockableTrait`, which otherwise builds its
+     * own over `SemaphoreStore`/`FlockStore` - both host-local. On a multi-pod deployment that
+     * makes the guard below useless: a cron on one node and a deploy hook on another would each
+     * take their own lock and walk the catalogue at the same time. Hosts that have configured
+     * `framework.lock` with a shared store (Redis, the database) get a real distributed lock;
+     * where the service is absent the argument resolves to null and the trait's local fallback
+     * still applies.
+     *
+     * @param class-string $productClass
+     */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ProductBrandSynchronizerInterface $synchronizer,
         private readonly BrandSettingsProviderInterface $settings,
         private readonly string $productClass,
+        ?LockFactory $lockFactory = null,
     ) {
         parent::__construct();
+
+        $this->lockFactory = $lockFactory;
     }
 
     protected function configure(): void

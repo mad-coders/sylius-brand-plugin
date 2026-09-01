@@ -7,6 +7,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+Production-readiness fixes ahead of 1.0.0. The migration namespace change is the reason this has to
+land before the stable tag rather than after it.
+
+### Fixed
+
+- **The plugin's migrations no longer occupy the generic `DoctrineMigrations` namespace.** They are
+  registered as `Madcoders\SyliusBrandPlugin\Migrations`, alongside every other package's own
+  namespace. `doctrine_migrations.migrations_paths` is a map keyed by namespace, so sharing the key
+  that the stock Symfony Flex recipe uses for the application's own migrations meant one of the two
+  paths silently won and the other's migrations never ran - the brand tables were never created, or
+  the application's own migrations were skipped, with no error at migrate time. CI never saw it
+  because the Sylius test application uses `App\Migrations`. **This must be applied before any
+  install has run the old migration**: the version is recorded in `sylius_migrations` under its
+  namespace, so an install that already ran `DoctrineMigrations\Version20260807090000` will try to
+  run the renamed class again and fail on `CREATE TABLE`.
+- `symfony/lock` is now `^6.4 || ^7.0` instead of `^6.4 || ^7.4`. The old constraint excluded
+  Symfony 7.0 to 7.3, and Flex pins every `symfony/*` package to the application's own Symfony
+  version, so the plugin was simply uninstallable on a shop pinned to any of them. The only use is
+  `LockableTrait`, which is unchanged across the whole range.
+- The documented admin routing (and the test application's) uses
+  `prefix: '/%sylius_admin.path_name%'` rather than a hardcoded `/admin`. A shop that renamed its
+  admin path - a routine hardening step - mounted the brand CRUD at `/admin`, outside
+  `sylius.security.admin_regex`, leaving those routes outside the admin firewall.
+- Brand listings no longer select translations with a null or empty slug. The column is nullable and
+  non-form writes (fixtures, imports, an auto-created empty translation) can leave one behind;
+  `path()` throws on a null route parameter, so such a row would have 500'd a public page. The shared
+  `shop/brand/_link.html.twig` partial guards the same case for hosts that render it with a brand of
+  their own.
+
+### Added
+
+- `docs/` ships in the installed package. It was `export-ignore`d, so `composer require` produced a
+  `vendor/` copy whose only installation instruction was a dead relative link to
+  `docs/INSTALLATION.md` - no bundle registration, no routing, no mention that three entity classes
+  are mandatory. Only `docs/PLAN.md` is still excluded.
+- `ResyncProductBrandsCommand` accepts an optional `LockFactory`, wired to `lock.default.factory`
+  with `on-invalid="null"`. `LockableTrait` otherwise builds its own over `SemaphoreStore` /
+  `FlockStore`, both host-local, so on a multi-pod deployment a cron on one node and a deploy hook on
+  another each took their own lock and walked the catalogue at the same time. Hosts that have
+  configured `framework.lock` with a shared store now get a real distributed lock; hosts that have
+  not keep the previous local behaviour.
+- Functional coverage for `madcoders:brand:resync-products`, which had none: exit codes, that
+  `--dry-run` really writes nothing, that a run exits without work while another holds the lock, and
+  that an invalid `--batch-size` degrades to a working run.
+- Behat coverage for brand-page pagination, asserting the status code directly. Out-of-range pages
+  are converted to 404 by `babdev/pagerfanta-bundle` (a hard Sylius dependency); the behaviour was
+  correct but rested on a transitive dependency and was untested.
+- CI runs PHP 8.4 on the newest supported stack. `composer.json` declares `^8.3` and the matrix only
+  covered 8.3, so the upper half of the declared range shipped untested - and the dependency graph
+  genuinely differs there, since `doctrine/instantiator 2.1.0` requires `^8.4`.
+- CI has a `lowest` job running `composer update --prefer-lowest --prefer-stable`. Without it the
+  declared floors - notably `monsieurbiz/sylius-settings-plugin ^2.0`, the plugin's tightest
+  coupling - were assertions rather than tested facts.
+
 ## [1.0.0-RC.2] - 2026-08-25
 
 Second release candidate. Makes the brand hookable reusable on any product grid, and closes the

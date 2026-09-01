@@ -99,9 +99,15 @@ final class MadcodersSyliusBrandExtension extends AbstractResourceExtension impl
         }
     }
 
+    /**
+     * Vendor-namespaced on purpose. `doctrine_migrations.migrations_paths` is a map keyed by
+     * namespace, and `DoctrineMigrations` is what the stock Symfony Flex recipe uses for the
+     * application's own migrations - sharing that key means one of the two paths silently wins and
+     * the other's migrations never run.
+     */
     protected function getMigrationsNamespace(): string
     {
-        return 'DoctrineMigrations';
+        return 'Madcoders\SyliusBrandPlugin\Migrations';
     }
 
     protected function getMigrationsDirectory(): string

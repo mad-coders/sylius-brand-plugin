@@ -92,6 +92,10 @@
             <argument type="service" id="madcoders_sylius_brand.behat.page.shop.brand.show" />
             <argument type="service" id="madcoders_sylius_brand.behat.page.shop.home" />
             <argument type="service" id="madcoders_sylius_brand.repository.brand" />
+            <!-- The raw Mink session, so a step can assert the actual status code. The page objects
+                 report "did not open" for a 404 and a 500 alike, which is exactly the distinction
+                 the out-of-range pagination scenario exists to make. -->
+            <argument type="service" id="behat.mink.default_session" />
         </service>
 
         <service id="madcoders_sylius_brand.behat.page.shop.brand.index"

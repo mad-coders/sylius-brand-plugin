@@ -47,7 +47,7 @@ Configuration lives in the admin, through
 |---|---|
 | PHP | `^8.3` |
 | Sylius | `^2.0` (tested against `~2.0`, `~2.1`, `~2.2`) |
-| Symfony | `^6.4 \|\| ^7.4` |
+| Symfony | `^6.4 \|\| ^7.0` |
 | Settings | `monsieurbiz/sylius-settings-plugin ^2.0` |
 | Database | MySQL 8.4 or MariaDB 11.4. **PostgreSQL is not supported** - see below. |
 

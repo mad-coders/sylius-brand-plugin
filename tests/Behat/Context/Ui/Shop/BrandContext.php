@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Madcoders\SyliusBrandPlugin\Behat\Context\Ui\Shop;
 
 use Behat\Behat\Context\Context;
+use Behat\Mink\Session;
 use FriendsOfBehat\PageObjectExtension\Page\UnexpectedPageException;
 use Madcoders\SyliusBrandPlugin\Model\BrandInterface;
 use Madcoders\SyliusBrandPlugin\Repository\BrandRepositoryInterface;
@@ -24,6 +25,7 @@ final class BrandContext implements Context
         private readonly ShowPageInterface $showPage,
         private readonly HomePageInterface $homePage,
         private readonly BrandRepositoryInterface $brandRepository,
+        private readonly Session $minkSession,
     ) {
     }
 
@@ -152,6 +154,36 @@ final class BrandContext implements Context
     public function iShouldBeToldThatThePageDoesNotExist(): void
     {
         Assert::true($this->pageWasNotFound, 'Expected the page to be missing, but it opened.');
+    }
+
+    /**
+     * Asks for a product page beyond the last one.
+     *
+     * Deliberately driven through the raw session rather than the page object: Pagerfanta throws on
+     * an out-of-range page, and an unhandled throw is a 500. The page object reports "did not open"
+     * for a 500 exactly as it does for a 404, so only the status code tells the two apart.
+     *
+     * @When I ask for page :page of the brand :name
+     */
+    public function iAskForPageOfTheBrand(int $page, string $name): void
+    {
+        $this->minkSession->visit(\sprintf(
+            '/en_US/brands/%s?page=%d',
+            $this->getSlug($name),
+            $page,
+        ));
+    }
+
+    /**
+     * @Then the response status code should be :code
+     */
+    public function theResponseStatusCodeShouldBe(int $code): void
+    {
+        Assert::same(
+            $this->minkSession->getStatusCode(),
+            $code,
+            \sprintf('Expected status code %d, got %%s.', $code),
+        );
     }
 
     /**

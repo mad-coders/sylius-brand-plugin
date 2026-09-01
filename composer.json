@@ -21,7 +21,7 @@
         "php": "^8.3",
         "monsieurbiz/sylius-settings-plugin": "^2.0",
         "sylius/sylius": "^2.0",
-        "symfony/lock": "^6.4 || ^7.4"
+        "symfony/lock": "^6.4 || ^7.0"
     },
     "require-dev": {
         "behat/behat": "^3.16",
