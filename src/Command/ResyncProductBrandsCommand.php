@@ -10,12 +10,13 @@ use Madcoders\SyliusBrandPlugin\Resolver\ProductBrandSynchronizerInterface;
 use Sylius\Component\Core\Model\ProductInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\FlockStore;
+use Symfony\Component\Lock\Store\SemaphoreStore;
 
 /**
  * Rebuilds `sylius_product.brand_id` for the whole catalogue.
@@ -31,18 +32,25 @@ use Symfony\Component\Lock\LockFactory;
 )]
 final class ResyncProductBrandsCommand extends Command
 {
-    use LockableTrait;
-
     private const int DEFAULT_BATCH_SIZE = 200;
 
+    private readonly LockFactory $lockFactory;
+
     /**
-     * The lock factory is injected rather than left to `LockableTrait`, which otherwise builds its
-     * own over `SemaphoreStore`/`FlockStore` - both host-local. On a multi-pod deployment that
-     * makes the guard below useless: a cron on one node and a deploy hook on another would each
-     * take their own lock and walk the catalogue at the same time. Hosts that have configured
-     * `framework.lock` with a shared store (Redis, the database) get a real distributed lock;
-     * where the service is absent the argument resolves to null and the trait's local fallback
-     * still applies.
+     * The lock is held here rather than through `LockableTrait`.
+     *
+     * The trait builds its own factory over `SemaphoreStore`/`FlockStore`, both host-local, so on a
+     * multi-pod deployment a nightly cron on one node and a deploy hook on another each take their
+     * own lock and walk the catalogue at the same time - exactly what the guard is meant to
+     * prevent. The trait only accepts an injected factory from Symfony 7.1 onwards, and this plugin
+     * supports `symfony/console` from 6.4: assigning its `$lockFactory` on 6.4 silently creates a
+     * dynamic property that the trait never reads, so the injected store would be ignored on
+     * precisely the versions that need it most. Owning the lock keeps the behaviour identical
+     * across the whole supported range.
+     *
+     * Hosts that configure `framework.lock` with a shared store (Redis, the database) get a real
+     * distributed lock. Where the service is absent the argument is null and the fallback below
+     * reproduces the trait's original local behaviour.
      *
      * @param class-string $productClass
      */
@@ -55,7 +63,9 @@ final class ResyncProductBrandsCommand extends Command
     ) {
         parent::__construct();
 
-        $this->lockFactory = $lockFactory;
+        $this->lockFactory = $lockFactory ?? new LockFactory(
+            SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore(),
+        );
     }
 
     protected function configure(): void
@@ -84,7 +94,9 @@ final class ResyncProductBrandsCommand extends Command
         // A resync is idempotent, so an overlapping run is not dangerous - it is just the whole
         // catalogue walked twice, at the same time, against the same rows. That is exactly what a
         // nightly cron plus a deploy hook will do to each other sooner or later.
-        if (!$this->lock()) {
+        $lock = $this->lockFactory->createLock((string) $this->getName());
+
+        if (!$lock->acquire()) {
             $io->warning('Another resync is already running - exiting without doing anything.');
 
             return Command::SUCCESS;
@@ -93,7 +105,7 @@ final class ResyncProductBrandsCommand extends Command
         try {
             return $this->resync($input, $io);
         } finally {
-            $this->release();
+            $lock->release();
         }
     }
 

@@ -95,6 +95,11 @@ jobs:
         # bounds are assertions rather than tested facts: monsieurbiz/sylius-settings-plugin ^2.0
         # is the plugin's tightest coupling (registry, alias, SettingProvider, cache pool) and
         # symfony/lock ^6.4 is never otherwise resolved below the newest release.
+        #
+        # Only the unit tests run here. --prefer-lowest drags the dev tooling down as well, and a
+        # PHPStan or ECS from the bottom of its own range reports on the state of that tool rather
+        # than on this plugin's floors, which is what the job exists to check. The static gates run
+        # at current versions in the `static` job.
         steps:
             -   uses: actions/checkout@v7
 
@@ -106,14 +111,20 @@ jobs:
                     tools: composer:v2
                     coverage: none
 
+            -   name: Disable the Flex plugin for this resolution
+                # Two reasons, both specific to --prefer-lowest. Flex applies the root
+                # extra.symfony.require (^7.4), which would pin symfony/* to 7.4 and defeat the
+                # point of resolving symfony/lock at its ^6.4 floor. And at the bottom of its own
+                # range Flex resolves to 1.x, whose RemoveCommand signature is incompatible with
+                # Composer 2 and fatals during install. Flex is only a scaffolding tool here;
+                # nothing this job runs needs it.
+                run: composer config allow-plugins.symfony/flex false
+
             -   name: Install lowest dependencies
                 run: composer update --no-interaction --no-progress --prefer-dist --prefer-lowest --prefer-stable
 
             -   name: Show resolved versions
                 run: composer show --direct
-
-            -   name: PHPStan
-                run: vendor/bin/phpstan analyse -c phpstan.neon --no-progress --memory-limit=-1
 
             -   name: Unit tests
                 run: vendor/bin/phpunit --colors=always --testsuite=unit
