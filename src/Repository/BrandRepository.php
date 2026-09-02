@@ -119,7 +119,67 @@ class BrandRepository extends EntityRepository implements BrandRepositoryInterfa
     public function findAllDisplayedOn(string $surface, string $localeCode): array
     {
         $queryBuilder = $this->createEnabledListQueryBuilder($localeCode);
+        $this->applySurface($queryBuilder, $surface);
 
+        /** @var array<array-key, BrandInterface> $brands */
+        $brands = $queryBuilder->getQuery()->getResult();
+
+        return $this->indexById($brands);
+    }
+
+    /**
+     * The displayable brands for a surface, restricted to the given ids.
+     *
+     * The bounded counterpart to `findAllDisplayedOn()`. A listing only ever needs the handful of
+     * brands its rows actually reference, and loading every displayable brand to answer twelve
+     * tiles is work that grows with the size of the brand table rather than with the page.
+     *
+     * @param list<int> $ids
+     *
+     * @return array<int, BrandInterface> indexed by id
+     */
+    public function findDisplayedOnByIds(string $surface, string $localeCode, array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        $queryBuilder = $this->createEnabledListQueryBuilder($localeCode);
+        $this->applySurface($queryBuilder, $surface);
+
+        $queryBuilder
+            ->andWhere('o.id IN (:ids)')
+            ->setParameter('ids', $ids)
+        ;
+
+        /** @var array<array-key, BrandInterface> $brands */
+        $brands = $queryBuilder->getQuery()->getResult();
+
+        return $this->indexById($brands);
+    }
+
+    /**
+     * @param array<array-key, BrandInterface> $brands
+     *
+     * @return array<int, BrandInterface>
+     */
+    private function indexById(array $brands): array
+    {
+        $indexed = [];
+
+        foreach ($brands as $brand) {
+            $id = $brand->getId();
+
+            if (null !== $id) {
+                $indexed[$id] = $brand;
+            }
+        }
+
+        return $indexed;
+    }
+
+    private function applySurface(QueryBuilder $queryBuilder, string $surface): void
+    {
         // Whitelisted rather than interpolated: `surface` reaches here from host-supplied hook
         // configuration, and a field name concatenated into DQL is how that becomes an injection.
         $field = match ($surface) {
@@ -144,21 +204,6 @@ class BrandRepository extends EntityRepository implements BrandRepositoryInterfa
         if (null !== $field) {
             $queryBuilder->andWhere(\sprintf('o.%s = true', $field));
         }
-
-        /** @var array<array-key, BrandInterface> $brands */
-        $brands = $queryBuilder->getQuery()->getResult();
-
-        $indexed = [];
-
-        foreach ($brands as $brand) {
-            $id = $brand->getId();
-
-            if (null !== $id) {
-                $indexed[$id] = $brand;
-            }
-        }
-
-        return $indexed;
     }
 
     /**

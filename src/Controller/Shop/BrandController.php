@@ -26,8 +26,11 @@ use Twig\Environment;
  */
 final readonly class BrandController
 {
-    private const int PRODUCTS_PER_PAGE = 12;
-
+    /**
+     * The page size is configuration (`madcoders_sylius_brand.products_per_page`), not a constant:
+     * how many products fit on a row is a decision about the theme, and a host that changed its
+     * grid should not have to replace this service to change the number.
+     */
     public function __construct(
         private Environment $twig,
         private BrandRepositoryInterface $brandRepository,
@@ -35,6 +38,7 @@ final readonly class BrandController
         private BrandSettingsProviderInterface $settings,
         private ChannelContextInterface $channelContext,
         private LocaleContextInterface $localeContext,
+        private int $productsPerPage = 12,
     ) {
     }
 
@@ -64,7 +68,7 @@ final readonly class BrandController
         $products = new Pagerfanta(new QueryAdapter(
             $this->productByBrandRepository->createShopListQueryBuilder($brand, $this->getChannel(), $localeCode),
         ));
-        $products->setMaxPerPage(self::PRODUCTS_PER_PAGE);
+        $products->setMaxPerPage($this->productsPerPage);
         $products->setCurrentPage(max(1, $request->query->getInt('page', 1)));
 
         return new Response($this->twig->render('@MadcodersSyliusBrandPlugin/shop/brand/show.html.twig', [

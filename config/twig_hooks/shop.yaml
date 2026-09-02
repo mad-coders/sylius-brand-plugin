@@ -27,12 +27,18 @@ sylius_twig_hooks:
 
         # The brand line on a product tile. Sylius' card details hook renders the image at 100 and
         # the name at 0; 50 puts the brand between them, which is the conventional place for it in
-        # a product grid. No logo: a tile already carries a product image, and a second one
-        # competes with it.
+        # a product grid.
+        #
+        # The logo is on, but at 20px - small enough to read as a mark next to the name rather than
+        # as a second image competing with the product photo. Brands without a logo simply render
+        # the name, so a catalogue with mixed data stays tidy.
         'sylius_shop.shared.product.card.details':
             madcoders_brand:
                 template: '@MadcodersSyliusBrandPlugin/shop/product/brand.html.twig'
                 configuration:
                     surface: product_tile
-                    class: 'text-muted small text-uppercase'
+                    show_logo: true
+                    logo_height: 20
+                    logo_width: 60
+                    class: 'd-flex align-items-center gap-1 text-muted small text-uppercase'
                 priority: 50

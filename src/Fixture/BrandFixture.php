@@ -29,6 +29,7 @@ class BrandFixture extends AbstractResourceFixture
                 ->booleanNode('display_on_product_page')->end()
                 ->booleanNode('display_on_product_tile')->end()
                 ->booleanNode('display_on_brand_overview')->end()
+                ->scalarNode('image')->end()
         ;
     }
 }

@@ -56,4 +56,16 @@ interface BrandRepositoryInterface extends RepositoryInterface
      * @return array<int, BrandInterface>
      */
     public function findAllDisplayedOn(string $surface, string $localeCode): array;
+
+    /**
+     * The displayable brands for a surface, restricted to the given ids.
+     *
+     * Use this in preference to `findAllDisplayedOn()` when the ids are known: the work then grows
+     * with the number of rows on the page rather than with the size of the brand table.
+     *
+     * @param list<int> $ids
+     *
+     * @return array<int, BrandInterface> indexed by id
+     */
+    public function findDisplayedOnByIds(string $surface, string $localeCode, array $ids): array;
 }
