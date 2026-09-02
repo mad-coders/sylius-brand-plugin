@@ -2,7 +2,7 @@
     "name": "madcoders/sylius-brand-plugin",
     "type": "sylius-plugin",
     "description": "Brand plugin for Sylius 2.x - manage brands in the admin, resolve them from a product attribute, and show a brand overview, brand product listings and brand badges in the shop.",
-    "license": "EUPL-1.2",
+    "license": "MIT",
     "authors": [
         {
             "name": "Piotr Lewandowski",
@@ -11,11 +11,19 @@
             "role": "Architect & Developer"
         }
     ],
+    "homepage": "https://github.com/mad-coders/sylius-brand-plugin",
+    "support": {
+        "issues": "https://github.com/mad-coders/sylius-brand-plugin/issues",
+        "source": "https://github.com/mad-coders/sylius-brand-plugin",
+        "docs": "https://github.com/mad-coders/sylius-brand-plugin/blob/1.0/docs/INSTALLATION.md"
+    },
     "keywords": [
         "sylius",
         "sylius-plugin",
+        "sylius2",
         "brand",
-        "manufacturer"
+        "manufacturer",
+        "ecommerce"
     ],
     "require": {
         "php": "^8.3",

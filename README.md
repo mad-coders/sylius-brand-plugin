@@ -5,15 +5,14 @@ badges on the product page and product tiles - driven by a product attribute you
 
 <p align="center">
     <a href="https://github.com/mad-coders/sylius-brand-plugin/actions/workflows/ci.yaml"><img src="https://github.com/mad-coders/sylius-brand-plugin/actions/workflows/ci.yaml/badge.svg?branch=1.0" alt="CI"></a>
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-EUPL--1.2-blue.svg" alt="License"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
 </p>
 
-> **Status: 1.0 release candidate.** Functionally complete and green across the supported
-> Sylius/Symfony/database matrix. The API - service ids, settings paths, table names - is frozen for
-> 1.0; what it still wants is real-world use. Please report anything you hit.
+> **Status: stable.** 1.0.0 is released and the API - service ids, settings paths, table names,
+> configuration keys - is frozen for the 1.x line. Please report anything you hit.
 >
 > ```bash
-> composer require madcoders/sylius-brand-plugin:^1.0@RC
+> composer require madcoders/sylius-brand-plugin
 > ```
 >
 > The brand hookable is reusable on your own product grids - see
@@ -214,4 +213,4 @@ Built and maintained by [Madcoders](https://www.madcoders.co).
 
 ## License
 
-[EUPL-1.2](LICENSE).
+[MIT](LICENSE). Copyright (c) 2026 Piotr Lewandowski, Madcoders.
