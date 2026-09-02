@@ -7,31 +7,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
+## [1.0.0] - 2026-09-02
 
-- **The brand logo is shown next to the brand name on product tiles as well as on the product
-  page.** The product-page badge already carried it; product tiles were deliberately text-only, on
-  the argument that a second image competes with the product photo. At 20px it does not - it reads
-  as a mark beside the name - so the tile hook now sets `show_logo: true`. A brand with no logo
-  still renders as its name alone, so a catalogue with mixed data stays tidy.
-- The logo is sizeable from hook configuration: `logo_height` (default 32), `logo_width` (default
-  96) and `logo_filter` (default `madcoders_sylius_brand_logo_thumbnail`). The plugin's own tile
-  hook uses 20 by 60.
-- Brand fixtures can carry a logo. `BrandExampleFactory` accepts an `image` option - an absolute
-  path or `@Bundle/...` notation - and uploads it through Sylius' image uploader. The upload is
-  explicit because a fixture persists through the object manager, so the plugin's image-upload
-  listener never fires for it. Three of the five demo brands now ship a logo and two do not, which
-  is what a real catalogue looks like.
-- Compile-time configuration, where there was none: `madcoders_sylius_brand.products_per_page`
-  (default 12) and `homepage_brands_limit` (default 12). Page sizes are a decision about the theme
-  rather than about the shop, so they belong here rather than in the admin settings - and the brand
-  page size was previously a private constant on a `final` controller, unreachable without
-  replacing the service. Both are validated at container build time.
-- `BrandRepositoryInterface::findDisplayedOnByIds()`, the bounded counterpart to
-  `findAllDisplayedOn()`.
+First stable release. The API - service ids, settings paths, table names and configuration keys -
+is frozen for the 1.x line.
+
+Everything here is the delta from 1.0.0-RC.2: a licence change, and the outcome of a production
+readiness review of the whole plugin.
 
 ### Changed
 
+- **The plugin is now MIT licensed**, replacing EUPL-1.2. Integrating the plugin means subclassing
+  its models and applying its `ProductTrait` to your own `Product`, which made the copyleft terms a
+  real question for commercial shops. MIT removes the question. The licence text now also carries
+  the copyright notice it previously lacked.
+- **The brand logo is shown next to the brand name on product tiles, as well as on the product
+  page.** The product-page badge already carried it; tiles were deliberately text-only, on the
+  argument that a second image competes with the product photo. At 20px it does not - it reads as a
+  mark beside the name. A brand with no logo still renders as its name alone, so a catalogue with
+  mixed data stays tidy.
 - **The demo brand fixtures are no longer added to Sylius' `default` suite.** They live in their own
   `madcoders_brand` suite, and `config/fixtures.yaml` is no longer imported by the plugin's
   `config.yaml`. Importing the plugin means asking for the brand feature, not for five brands the
@@ -46,23 +40,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `Configuration.php` is analysed by PHPStan again; the `excludePaths` entry that skipped it is
   gone, so the plugin's configuration contract is covered at `level: max`.
 
-### Fixed
+### Added
 
-- `madcoders:brand:resync-products` no longer lazy-loads attribute values one product at a time. Each
-  page is now two bounded queries - the ids, then those products with their attribute values
-  fetch-joined - instead of one query per row. The join has to be a second query because a `LIMIT`
-  applies to SQL rows, so a fetch-joined to-many association cannot be paged directly.
-- The same command pages by keyset (`id > :lastId`) rather than by offset. `setFirstResult()` makes
-  the database walk and discard every row before the window, so a full pass over a large catalogue
-  was quadratic.
-- The migration guards the column it adds to `sylius_product`. A shop that already carries a
-  `brand_id` - hand-rolled, or from another brand plugin - would previously abort the whole
-  migration with `ColumnAlreadyExists` and take the three brand tables down with it. `down()` mirrors
-  the guard, so it never drops a column this plugin did not add. The product table name is a named
-  constant rather than three inline literals.
-
-Production-readiness fixes ahead of 1.0.0. The migration namespace change is the reason this has to
-land before the stable tag rather than after it.
+- Compile-time configuration, where there was none: `madcoders_sylius_brand.products_per_page`
+  (default 12) and `homepage_brands_limit` (default 12). Page sizes are a decision about the theme
+  rather than about the shop, so they belong here rather than in the admin settings - and the brand
+  page size was previously a private constant on a `final` controller, unreachable without replacing
+  the service. Both are validated at container build time.
+- The logo is sizeable from hook configuration: `logo_height` (default 32), `logo_width` (default
+  96) and `logo_filter` (default `madcoders_sylius_brand_logo_thumbnail`). The plugin's own tile
+  hook uses 20 by 60.
+- Brand fixtures can carry a logo. `BrandExampleFactory` accepts an `image` option - an absolute
+  path or `@Bundle/...` notation - and uploads it through Sylius' image uploader. The upload is
+  explicit because a fixture persists through the object manager, so the plugin's image-upload
+  listener never fires for it. Three of the five demo brands ship a logo and two do not, which is
+  what a real catalogue looks like.
+- `BrandRepositoryInterface::findDisplayedOnByIds()`, the bounded counterpart to
+  `findAllDisplayedOn()`.
+- `docs/` ships in the installed package. It was `export-ignore`d, so `composer require` produced a
+  `vendor/` copy whose only installation instruction was a dead relative link to
+  `docs/INSTALLATION.md` - no bundle registration, no routing, no mention that three entity classes
+  are mandatory. Only `docs/PLAN.md` is excluded.
+- `ResyncProductBrandsCommand` accepts an optional `LockFactory`, wired to `lock.default.factory`
+  with `on-invalid="null"`. Hosts that have configured `framework.lock` with a shared store get a
+  real distributed lock; hosts that have not keep the previous local behaviour.
+- Functional coverage for `madcoders:brand:resync-products`, which had none: exit codes, that
+  `--dry-run` really writes nothing, that a run exits without work while another holds the lock, and
+  that an invalid `--batch-size` degrades to a working run.
+- Behat coverage for brand-page pagination, asserting the status code directly. Out-of-range pages
+  are converted to 404 by `babdev/pagerfanta-bundle` (a hard Sylius dependency); the behaviour was
+  correct but rested on a transitive dependency and was untested.
+- Integration coverage for the logo: that it renders when the brand has one, that its size is
+  configurable, and that a brand without one renders its name with no `<img>`. Plus a unit test for
+  the configuration tree.
+- CI runs PHP 8.4 on the newest supported stack. `composer.json` declares `^8.3` and the matrix only
+  covered 8.3, so the upper half of the declared range shipped untested - and the dependency graph
+  genuinely differs there, since `doctrine/instantiator 2.1.0` requires `^8.4`.
+- CI has a `lowest` job running `composer update --prefer-lowest --prefer-stable`, so the declared
+  floors - notably `monsieurbiz/sylius-settings-plugin ^2.0`, the plugin's tightest coupling - are
+  tested facts rather than assertions.
 
 ### Fixed
 
@@ -72,14 +88,18 @@ land before the stable tag rather than after it.
   that the stock Symfony Flex recipe uses for the application's own migrations meant one of the two
   paths silently won and the other's migrations never ran - the brand tables were never created, or
   the application's own migrations were skipped, with no error at migrate time. CI never saw it
-  because the Sylius test application uses `App\Migrations`. **This must be applied before any
-  install has run the old migration**: the version is recorded in `sylius_migrations` under its
-  namespace, so an install that already ran `DoctrineMigrations\Version20260807090000` will try to
-  run the renamed class again and fail on `CREATE TABLE`.
+  because the Sylius test application uses `App\Migrations`.
+  **Anyone upgrading from an RC must be aware of this**: the version is recorded in
+  `sylius_migrations` under its namespace, so an install that already ran
+  `DoctrineMigrations\Version20260807090000` will try to run the renamed class again and fail on
+  `CREATE TABLE`. Rename the recorded version rather than re-running the migration.
 - `symfony/lock` is now `^6.4 || ^7.0` instead of `^6.4 || ^7.4`. The old constraint excluded
   Symfony 7.0 to 7.3, and Flex pins every `symfony/*` package to the application's own Symfony
-  version, so the plugin was simply uninstallable on a shop pinned to any of them. The only use is
-  `LockableTrait`, which is unchanged across the whole range.
+  version, so the plugin was simply uninstallable on a shop pinned to any of them.
+- The lock guard on `madcoders:brand:resync-products` works on Symfony 6.4. `LockableTrait` only
+  accepts an injected `LockFactory` from 7.1 onwards; on 6.4 assigning its `$lockFactory` silently
+  creates a dynamic property the trait never reads, so it fell back to a host-local store. The
+  command now holds the lock itself, so behaviour is identical across the supported range.
 - The documented admin routing (and the test application's) uses
   `prefix: '/%sylius_admin.path_name%'` rather than a hardcoded `/admin`. A shop that renamed its
   admin path - a routine hardening step - mounted the brand CRUD at `/admin`, outside
@@ -87,33 +107,18 @@ land before the stable tag rather than after it.
 - Brand listings no longer select translations with a null or empty slug. The column is nullable and
   non-form writes (fixtures, imports, an auto-created empty translation) can leave one behind;
   `path()` throws on a null route parameter, so such a row would have 500'd a public page. The shared
-  `shop/brand/_link.html.twig` partial guards the same case for hosts that render it with a brand of
-  their own.
-
-### Added
-
-- `docs/` ships in the installed package. It was `export-ignore`d, so `composer require` produced a
-  `vendor/` copy whose only installation instruction was a dead relative link to
-  `docs/INSTALLATION.md` - no bundle registration, no routing, no mention that three entity classes
-  are mandatory. Only `docs/PLAN.md` is still excluded.
-- `ResyncProductBrandsCommand` accepts an optional `LockFactory`, wired to `lock.default.factory`
-  with `on-invalid="null"`. `LockableTrait` otherwise builds its own over `SemaphoreStore` /
-  `FlockStore`, both host-local, so on a multi-pod deployment a cron on one node and a deploy hook on
-  another each took their own lock and walked the catalogue at the same time. Hosts that have
-  configured `framework.lock` with a shared store now get a real distributed lock; hosts that have
-  not keep the previous local behaviour.
-- Functional coverage for `madcoders:brand:resync-products`, which had none: exit codes, that
-  `--dry-run` really writes nothing, that a run exits without work while another holds the lock, and
-  that an invalid `--batch-size` degrades to a working run.
-- Behat coverage for brand-page pagination, asserting the status code directly. Out-of-range pages
-  are converted to 404 by `babdev/pagerfanta-bundle` (a hard Sylius dependency); the behaviour was
-  correct but rested on a transitive dependency and was untested.
-- CI runs PHP 8.4 on the newest supported stack. `composer.json` declares `^8.3` and the matrix only
-  covered 8.3, so the upper half of the declared range shipped untested - and the dependency graph
-  genuinely differs there, since `doctrine/instantiator 2.1.0` requires `^8.4`.
-- CI has a `lowest` job running `composer update --prefer-lowest --prefer-stable`. Without it the
-  declared floors - notably `monsieurbiz/sylius-settings-plugin ^2.0`, the plugin's tightest
-  coupling - were assertions rather than tested facts.
+  `shop/brand/_link.html.twig` partial guards the same case.
+- `madcoders:brand:resync-products` no longer lazy-loads attribute values one product at a time.
+  Each page is two bounded queries - the ids, then those products with their attribute values
+  fetch-joined - instead of one query per row. The join has to be a second query because a `LIMIT`
+  applies to SQL rows, so a fetch-joined to-many association cannot be paged directly.
+- The same command pages by keyset (`id > :lastId`) rather than by offset. `setFirstResult()` makes
+  the database walk and discard every row before the window, so a full pass over a large catalogue
+  was quadratic.
+- The migration guards the column it adds to `sylius_product`. A shop that already carries a
+  `brand_id` - hand-rolled, or from another brand plugin - would previously abort the whole
+  migration with `ColumnAlreadyExists` and take the three brand tables down with it. `down()`
+  mirrors the guard, so it never drops a column this plugin did not add.
 
 ## [1.0.0-RC.2] - 2026-08-25
 
@@ -233,3 +238,8 @@ First release candidate. Verified on PHP 8.3 across Sylius ~2.0, ~2.1 and ~2.2, 
   A channel-scoped value is ignored.
 - Turning the feature off hides brands in the shop but does not stop products resolving, so no
   resync is needed when switching it back on.
+
+[Unreleased]: https://github.com/mad-coders/sylius-brand-plugin/compare/v1.0.0...1.0
+[1.0.0]: https://github.com/mad-coders/sylius-brand-plugin/compare/v1.0.0-RC.2...v1.0.0
+[1.0.0-RC.2]: https://github.com/mad-coders/sylius-brand-plugin/compare/v1.0.0-RC.1...v1.0.0-RC.2
+[1.0.0-RC.1]: https://github.com/mad-coders/sylius-brand-plugin/releases/tag/v1.0.0-RC.1
