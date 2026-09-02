@@ -94,6 +94,58 @@ final class BrandHookableTest extends KernelTestCase
         self::assertSame('', trim($output));
     }
 
+    /**
+     * The brand logo on a listing and on the product page.
+     *
+     * Both of the plugin's own shop hooks turn `show_logo` on, so a brand that has uploaded one is
+     * shown as a small mark beside its name rather than as the name alone.
+     */
+    public function testItRendersTheLogoWhenShowLogoIsOn(): void
+    {
+        $product = $this->createProductWithBrand(
+            'nike-logo',
+            'Nike',
+            image: \dirname(__DIR__, 3) . '/src/Resources/fixtures/logos/sylius.png',
+        );
+
+        $output = $this->render(['product' => $product], ['show_logo' => true]);
+
+        self::assertStringContainsString('<img', $output);
+        self::assertStringContainsString('data-test-madcoders-product-brand-logo="nike-logo"', $output);
+        // The name is still there: the logo sits beside it, it does not replace it.
+        self::assertStringContainsString('Nike', $output);
+    }
+
+    public function testTheLogoSizeIsConfigurable(): void
+    {
+        $product = $this->createProductWithBrand(
+            'nike-sized',
+            'Nike',
+            image: \dirname(__DIR__, 3) . '/src/Resources/fixtures/logos/sylius.png',
+        );
+
+        $output = $this->render(['product' => $product], [
+            'show_logo' => true,
+            'logo_height' => 20,
+            'logo_width' => 60,
+        ]);
+
+        self::assertStringContainsString('max-height: 20px', $output);
+        self::assertStringContainsString('max-width: 60px', $output);
+    }
+
+    public function testItRendersNoLogoWhenTheBrandHasNone(): void
+    {
+        // The common case in a real catalogue: the toggle is on, but this particular brand never
+        // uploaded a mark. The name has to render on its own rather than leaving a broken image.
+        $product = $this->createProductWithBrand('nike-nologo', 'Nike');
+
+        $output = $this->render(['product' => $product], ['show_logo' => true]);
+
+        self::assertStringNotContainsString('<img', $output);
+        self::assertStringContainsString('Nike', $output);
+    }
+
     public function testItRespectsTheSurfaceToggle(): void
     {
         $product = $this->createProductWithBrand('nike-surface', 'Nike', displayOnProductTile: false);
@@ -173,6 +225,7 @@ final class BrandHookableTest extends KernelTestCase
         string $brandName,
         bool $enabled = true,
         bool $displayOnProductTile = true,
+        ?string $image = null,
     ): ProductInterface {
         /** @var ExampleFactoryInterface<BrandInterface> $brandFactory */
         $brandFactory = self::getContainer()->get('madcoders_sylius_brand.fixture.example_factory.brand');
@@ -182,6 +235,7 @@ final class BrandHookableTest extends KernelTestCase
             'name' => $brandName,
             'enabled' => $enabled,
             'display_on_product_tile' => $displayOnProductTile,
+            'image' => $image,
         ]);
 
         // The example factory translates into every locale the store has; make sure the one the

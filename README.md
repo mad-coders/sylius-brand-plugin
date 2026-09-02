@@ -96,6 +96,36 @@ The last two are global on purpose: a product has one `brand_id`, so a per-chann
 have no single right answer. They are only offered on the "all channels" tab, and a channel-scoped
 value left behind by an older install is ignored.
 
+### Page sizes
+
+Two things are set in configuration rather than in the admin, because they are decisions about the
+theme rather than about the shop:
+
+```yaml
+# config/packages/madcoders_sylius_brand.yaml
+madcoders_sylius_brand:
+    products_per_page: 12       # products listed on a brand page before paginating
+    homepage_brands_limit: 12   # brands in the homepage strip
+```
+
+Both default to 12, so you only need this file if you are changing one.
+
+### Demo fixtures
+
+The plugin ships five demo brands - three with a logo, two without - in their own suite. They are
+**not** added to Sylius' `default` suite, so installing the plugin never puts brands you did not
+create into your own `sylius:fixtures:load`. To use them:
+
+```yaml
+# config/packages/madcoders_sylius_brand.yaml
+imports:
+    - { resource: "@MadcodersSyliusBrandPlugin/config/fixtures.yaml" }
+```
+
+```bash
+bin/console sylius:fixtures:load madcoders_brand
+```
+
 ## Putting brands on your own product grids
 
 The plugin ships the brand on three surfaces out of the box - the homepage strip, the product page
@@ -120,7 +150,10 @@ sylius_twig_hooks:
 |---|---|---|
 | `context_key` | `product` | where the product lives in the hook's context, if it isn't called `product` |
 | `surface` | `product_tile` | which display toggle to respect: `homepage`, `product_page`, `product_tile`, `brand_overview`, or `any` to ignore the toggles |
-| `show_logo` | `false` | render the logo before the name |
+| `show_logo` | `false` | render the brand logo before the name (on for the plugin's own product-page and product-tile hooks) |
+| `logo_height` | `32` | maximum logo height in px |
+| `logo_width` | `96` | maximum logo width in px |
+| `logo_filter` | `madcoders_sylius_brand_logo_thumbnail` | LiipImagine filter set for the logo |
 | `link` | `true` | link to the brand page (falls back to plain text when that brand's page is not reachable) |
 | `label` | `false` | prefix with a translated "Brand:" label |
 | `class` | muted small line | CSS classes for the wrapper |

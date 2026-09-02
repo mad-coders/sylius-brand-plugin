@@ -95,7 +95,8 @@
             "vendor/bin/console doctrine:database:drop --force --if-exists",
             "vendor/bin/console doctrine:database:create",
             "vendor/bin/console doctrine:migration:migrate -n",
-            "vendor/bin/console sylius:fixtures:load -n"
+            "vendor/bin/console sylius:fixtures:load default -n",
+            "vendor/bin/console sylius:fixtures:load madcoders_brand -n"
         ],
         "frontend-clear": [
             "cd vendor/sylius/test-application && yarn install && yarn build",

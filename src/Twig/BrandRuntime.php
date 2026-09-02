@@ -20,9 +20,12 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
     private const int DEFAULT_HOMEPAGE_LIMIT = 12;
 
     /**
-     * Displayable brands per surface, indexed by id, each surface loaded at most once per request.
+     * Brands already resolved this request, per surface, indexed by id.
      *
-     * @var array<string, array<int, BrandInterface>>
+     * A null value is a cached miss - the brand exists but is not displayable on that surface - and
+     * is as much worth remembering as a hit.
+     *
+     * @var array<string, array<int, BrandInterface|null>>
      */
     private array $brandsBySurface = [];
 
@@ -30,6 +33,7 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
         private readonly BrandSettingsProviderInterface $settings,
         private readonly BrandRepositoryInterface $brandRepository,
         private readonly LocaleContextInterface $localeContext,
+        private readonly int $homepageLimit = self::DEFAULT_HOMEPAGE_LIMIT,
     ) {
     }
 
@@ -46,13 +50,19 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
     /**
      * @return array<array-key, BrandInterface>
      */
-    public function getHomepageBrands(int $limit = self::DEFAULT_HOMEPAGE_LIMIT): array
+    public function getHomepageBrands(?int $limit = null): array
     {
         if (!$this->settings->isEnabled()) {
             return [];
         }
 
-        return $this->brandRepository->findAllForHomepage($this->localeContext->getLocaleCode(), $limit);
+        // Null rather than a literal default: an explicit limit from the caller still wins, but a
+        // template that asks for "the usual number" gets whatever the application configured in
+        // `madcoders_sylius_brand.homepage_brands_limit`.
+        return $this->brandRepository->findAllForHomepage(
+            $this->localeContext->getLocaleCode(),
+            $limit ?? $this->homepageLimit,
+        );
     }
 
     /**
@@ -69,9 +79,13 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
      * that is up to 24 extra queries.
      *
      * Getting the **identifier** off a proxy is free: Doctrine already has it and does not
-     * initialise for it. So the displayable set for the surface is loaded once, with translations
-     * and images joined, and every row is answered from that map. One query per surface per
-     * request, however many rows there are.
+     * initialise for it. So the brand is loaded by id, with its translation and images joined, and
+     * memoised for the rest of the request - a listing that repeats the same brand across rows
+     * costs one query, not one per row.
+     *
+     * Loading by id rather than loading every displayable brand keeps the work proportional to the
+     * page instead of to the brand table: a catalogue with several thousand brands would otherwise
+     * hydrate all of them, with translations and images, to answer twelve tiles.
      *
      * @param string $surface one of BrandInterface::SURFACE_*
      */
@@ -95,11 +109,18 @@ final class BrandRuntime implements RuntimeExtensionInterface, ResetInterface
             return null;
         }
 
-        $this->brandsBySurface[$surface] ??= $this->brandRepository->findAllDisplayedOn(
-            $surface,
-            $this->localeContext->getLocaleCode(),
-        );
+        // array_key_exists, not ??=: a brand that is not displayable on this surface caches as
+        // null, and `??=` would re-query it on every row that references it.
+        if (!\array_key_exists($id, $this->brandsBySurface[$surface] ?? [])) {
+            $found = $this->brandRepository->findDisplayedOnByIds(
+                $surface,
+                $this->localeContext->getLocaleCode(),
+                [$id],
+            );
 
-        return $this->brandsBySurface[$surface][$id] ?? null;
+            $this->brandsBySurface[$surface][$id] = $found[$id] ?? null;
+        }
+
+        return $this->brandsBySurface[$surface][$id];
     }
 }

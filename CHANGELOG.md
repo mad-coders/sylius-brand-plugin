@@ -7,6 +7,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The brand logo is shown next to the brand name on product tiles as well as on the product
+  page.** The product-page badge already carried it; product tiles were deliberately text-only, on
+  the argument that a second image competes with the product photo. At 20px it does not - it reads
+  as a mark beside the name - so the tile hook now sets `show_logo: true`. A brand with no logo
+  still renders as its name alone, so a catalogue with mixed data stays tidy.
+- The logo is sizeable from hook configuration: `logo_height` (default 32), `logo_width` (default
+  96) and `logo_filter` (default `madcoders_sylius_brand_logo_thumbnail`). The plugin's own tile
+  hook uses 20 by 60.
+- Brand fixtures can carry a logo. `BrandExampleFactory` accepts an `image` option - an absolute
+  path or `@Bundle/...` notation - and uploads it through Sylius' image uploader. The upload is
+  explicit because a fixture persists through the object manager, so the plugin's image-upload
+  listener never fires for it. Three of the five demo brands now ship a logo and two do not, which
+  is what a real catalogue looks like.
+- Compile-time configuration, where there was none: `madcoders_sylius_brand.products_per_page`
+  (default 12) and `homepage_brands_limit` (default 12). Page sizes are a decision about the theme
+  rather than about the shop, so they belong here rather than in the admin settings - and the brand
+  page size was previously a private constant on a `final` controller, unreachable without
+  replacing the service. Both are validated at container build time.
+- `BrandRepositoryInterface::findDisplayedOnByIds()`, the bounded counterpart to
+  `findAllDisplayedOn()`.
+
+### Changed
+
+- **The demo brand fixtures are no longer added to Sylius' `default` suite.** They live in their own
+  `madcoders_brand` suite, and `config/fixtures.yaml` is no longer imported by the plugin's
+  `config.yaml`. Importing the plugin means asking for the brand feature, not for five brands the
+  host never created appearing in its own `sylius:fixtures:load`. Import the file and run
+  `sylius:fixtures:load madcoders_brand` if you want them.
+- The brand shown on a listing is loaded by id instead of loading every displayable brand for the
+  surface. The previous approach was one query per request however many rows there were, but it
+  hydrated the whole brand table - with translations and images - to answer twelve tiles. Work now
+  scales with the page rather than with the catalogue, and a repeated brand still costs one query.
+- `madcoders_homepage_brands()` takes its default limit from configuration. An explicit argument
+  still wins.
+- `Configuration.php` is analysed by PHPStan again; the `excludePaths` entry that skipped it is
+  gone, so the plugin's configuration contract is covered at `level: max`.
+
+### Fixed
+
+- `madcoders:brand:resync-products` no longer lazy-loads attribute values one product at a time. Each
+  page is now two bounded queries - the ids, then those products with their attribute values
+  fetch-joined - instead of one query per row. The join has to be a second query because a `LIMIT`
+  applies to SQL rows, so a fetch-joined to-many association cannot be paged directly.
+- The same command pages by keyset (`id > :lastId`) rather than by offset. `setFirstResult()` makes
+  the database walk and discard every row before the window, so a full pass over a large catalogue
+  was quadratic.
+- The migration guards the column it adds to `sylius_product`. A shop that already carries a
+  `brand_id` - hand-rolled, or from another brand plugin - would previously abort the whole
+  migration with `ColumnAlreadyExists` and take the three brand tables down with it. `down()` mirrors
+  the guard, so it never drops a column this plugin did not add. The product table name is a named
+  constant rather than three inline literals.
+
 Production-readiness fixes ahead of 1.0.0. The migration namespace change is the reason this has to
 land before the stable tag rather than after it.
 

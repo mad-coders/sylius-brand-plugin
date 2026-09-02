@@ -9,6 +9,9 @@
                   homepage | product_page | product_tile |
                   brand_overview | any                             (default: product_tile)
      show_logo    render the brand logo before the name            (default: false)
+     logo_height  maximum logo height in px                        (default: 32)
+     logo_width   maximum logo width in px                         (default: 96)
+     logo_filter  LiipImagine filter set for the logo              (default: ..._logo_thumbnail)
      link         link to the brand page when it is reachable      (default: true)
      label        prefix with a translated "Brand:" label          (default: false)
      class        CSS classes for the wrapper                      (default: a muted small line)
@@ -33,9 +36,16 @@
     <div class="{{ config.class ?? 'd-flex align-items-center gap-2 text-muted small' }}"
          {{ sylius_test_html_attribute('madcoders-product-brand', brand.code) }}>
         {% if logo is not null and logo.path is not null %}
-            <img src="{{ logo.path|imagine_filter('madcoders_sylius_brand_logo_thumbnail') }}"
-                 alt="{{ brand.name }}"
-                 style="max-height: 32px; max-width: 96px;"
+            {# Bounded on both axes so a tall square mark and a wide wordmark both stay inside the
+               line they sit on. The height is what a caller usually wants to change - a product
+               tile needs a smaller mark than a product page - so it is configuration rather than a
+               CSS class the host would have to define somewhere else. The alt is empty on purpose:
+               the brand name is rendered right next to it, and repeating it makes a screen reader
+               announce the brand twice. #}
+            <img src="{{ logo.path|imagine_filter(config.logo_filter ?? 'madcoders_sylius_brand_logo_thumbnail') }}"
+                 alt=""
+                 style="max-height: {{ config.logo_height ?? 32 }}px; max-width: {{ config.logo_width ?? 96 }}px; width: auto; height: auto;"
+                 {{ sylius_test_html_attribute('madcoders-product-brand-logo', brand.code) }}
                  loading="lazy">
         {% endif %}
 

@@ -1,24 +1,39 @@
-# Adds brand fixtures to Sylius' default suite, so `bin/console sylius:fixtures:load` gives a shop
-# with brands you can actually browse.
+# Demo brands for the plugin, in their own suite.
 #
-# The priority is negative so this runs after Sylius' own fixtures: brands need locales to exist
-# before they can be translated.
+# NOT imported by config.yaml, and deliberately not added to Sylius' `default` suite. A host that
+# imports the plugin's configuration is asking for the brand feature, not for five brands it never
+# created appearing in its own catalogue the next time it runs `sylius:fixtures:load`.
+#
+# To use them, import this file from your application and run the suite by name:
+#
+#     # config/packages/madcoders_sylius_brand.yaml
+#     imports:
+#         - { resource: "@MadcodersSyliusBrandPlugin/config/fixtures.yaml" }
+#
+#     bin/console sylius:fixtures:load madcoders_brand
+#
+# The priority is negative so this runs after Sylius' own fixtures within the suite: brands need
+# locales to exist before they can be translated.
 #
 # These fixtures create brands only. They do not touch the product attribute or the plugin's
 # settings, because doing so would silently overwrite whatever a developer had configured. See
 # docs/INSTALLATION.md for the two commands that finish the setup.
 sylius_fixtures:
     suites:
-        default:
+        madcoders_brand:
             fixtures:
                 madcoders_brand:
                     priority: -10
                     options:
                         custom:
+                            # Three of the five carry a logo and two do not, on purpose: a real
+                            # catalogue is never fully populated, and the shop surfaces have to look
+                            # right either way.
                             -   code: 'sylius'
                                 name: 'Sylius'
                                 description: 'The house brand. Shown everywhere, so every display toggle is on.'
                                 position: 0
+                                image: '@MadcodersSyliusBrandPlugin/src/Resources/fixtures/logos/sylius.png'
                                 display_on_homepage: true
                                 display_on_product_page: true
                                 display_on_product_tile: true
@@ -28,11 +43,14 @@ sylius_fixtures:
                                 name: 'Modern Wear'
                                 description: 'A brand with its own page and a badge on the product page, but no homepage slot.'
                                 position: 10
+                                image: '@MadcodersSyliusBrandPlugin/src/Resources/fixtures/logos/modern-wear.png'
+                                display_on_product_tile: true
 
                             # On the overview but nowhere else - the long-tail supplier case.
                             -   code: 'quiet-supplier'
                                 name: 'Quiet Supplier'
                                 position: 20
+                                image: '@MadcodersSyliusBrandPlugin/src/Resources/fixtures/logos/quiet-supplier.png'
                                 display_on_product_page: false
 
                             # Exists for mapping and filtering, but is invisible in the shop: the

@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Yaml\Yaml;
+use Webmozart\Assert\Assert;
 
 final class MadcodersSyliusBrandExtension extends AbstractResourceExtension implements PrependExtensionInterface
 {
@@ -18,6 +19,21 @@ final class MadcodersSyliusBrandExtension extends AbstractResourceExtension impl
 
     public function load(array $configs, ContainerBuilder $container): void
     {
+        $config = $this->processConfiguration(new Configuration(), $configs);
+
+        // Asserted rather than assumed: processConfiguration() is typed as a plain array, so every
+        // value out of it is `mixed` however tightly the tree constrained it.
+        $productsPerPage = $config['products_per_page'];
+        Assert::integer($productsPerPage);
+
+        $homepageBrandsLimit = $config['homepage_brands_limit'];
+        Assert::integer($homepageBrandsLimit);
+
+        // Exposed as parameters rather than injected literals so a host can override either one
+        // from its own configuration without redefining the services that consume them.
+        $container->setParameter('madcoders_sylius_brand.products_per_page', $productsPerPage);
+        $container->setParameter('madcoders_sylius_brand.homepage_brands_limit', $homepageBrandsLimit);
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
 
         $loader->load('services.xml');

@@ -1,6 +1,9 @@
 imports:
     - { resource: "@MonsieurBizSyliusSettingsPlugin/Resources/config/config.yaml" }
     - { resource: "@MadcodersSyliusBrandPlugin/config/config.yaml" }
+    # The demo brands are no longer part of the host's default suite, so the test application opts
+    # in explicitly. Load them with `sylius:fixtures:load madcoders_brand`.
+    - { resource: "@MadcodersSyliusBrandPlugin/config/fixtures.yaml" }
     - { resource: "services_test.php" }
 
 # The plugin's models are mapped superclasses, so the application supplies the concrete entities -

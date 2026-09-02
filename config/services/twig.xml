@@ -17,6 +17,7 @@
             <argument type="service" id="madcoders_sylius_brand.provider.settings" />
             <argument type="service" id="madcoders_sylius_brand.repository.brand" />
             <argument type="service" id="sylius.context.locale" />
+            <argument>%madcoders_sylius_brand.homepage_brands_limit%</argument>
 
             <tag name="twig.runtime" />
             <!-- Memoises the tile-displayable brand set for the request. -->

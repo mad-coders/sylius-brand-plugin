@@ -21,6 +21,14 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20260807090000 extends AbstractMigration
 {
+    /**
+     * Sylius' own product table, which this migration extends rather than owns.
+     *
+     * Named here rather than inline so an application that renamed it has one place to change. The
+     * ORM mapping is not readable from a migration, so this cannot be derived automatically.
+     */
+    private const string PRODUCT_TABLE = 'sylius_product';
+
     public function getDescription(): string
     {
         return 'Add brands, their translations and logos, and the resolved brand on the product.';
@@ -74,7 +82,22 @@ final class Version20260807090000 extends AbstractMigration
 
         // The resolved brand, added by the plugin's ProductTrait. Derived state - always
         // recomputable with `bin/console madcoders:brand:resync-products`.
-        $product = $schema->getTable('sylius_product');
+        //
+        // Guarded because the column is added to a table this plugin does not own. A shop that
+        // already carries a `brand_id` on its products - hand-rolled, or left behind by another
+        // brand plugin - would otherwise abort the whole migration with ColumnAlreadyExists, and
+        // take the three tables above down with it.
+        $product = $schema->getTable(self::PRODUCT_TABLE);
+
+        if ($product->hasColumn('brand_id')) {
+            $this->write(\sprintf(
+                'Skipped adding %s.brand_id: the column already exists. Check that it means what this plugin expects before running the resync command.',
+                self::PRODUCT_TABLE,
+            ));
+
+            return;
+        }
+
         $product->addColumn('brand_id', 'integer', ['notnull' => false]);
         $product->addIndex(['brand_id'], 'IDX_677B9B7444F5D008');
         // Named explicitly so down() can drop it: an auto-generated constraint name differs per
@@ -90,10 +113,15 @@ final class Version20260807090000 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $product = $schema->getTable('sylius_product');
-        $product->removeForeignKey('FK_677B9B7444F5D008');
-        $product->dropIndex('IDX_677B9B7444F5D008');
-        $product->dropColumn('brand_id');
+        $product = $schema->getTable(self::PRODUCT_TABLE);
+
+        // Mirrors the guard in up(): on an install where the column was already there, up() left it
+        // alone, so down() must not remove someone else's column.
+        if ($product->hasForeignKey('FK_677B9B7444F5D008')) {
+            $product->removeForeignKey('FK_677B9B7444F5D008');
+            $product->dropIndex('IDX_677B9B7444F5D008');
+            $product->dropColumn('brand_id');
+        }
 
         $schema->dropTable('madcoders_brand__brand_image');
         $schema->dropTable('madcoders_brand__brand_translation');

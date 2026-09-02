@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Madcoders\SyliusBrandPlugin\Fixture\Factory;
 
+use Madcoders\SyliusBrandPlugin\Model\BrandImageInterface;
 use Madcoders\SyliusBrandPlugin\Model\BrandInterface;
 use Sylius\Bundle\CoreBundle\Fixture\Factory\AbstractExampleFactory;
 use Sylius\Bundle\CoreBundle\Fixture\Factory\ExampleFactoryInterface;
+use Sylius\Component\Core\Uploader\ImageUploaderInterface;
 use Sylius\Component\Locale\Model\LocaleInterface;
 use Sylius\Component\Product\Generator\SlugGeneratorInterface;
 use Sylius\Resource\Doctrine\Persistence\RepositoryInterface;
 use Sylius\Resource\Factory\FactoryInterface;
+use Symfony\Component\Config\FileLocatorInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Webmozart\Assert\Assert;
 
@@ -24,11 +28,15 @@ class BrandExampleFactory extends AbstractExampleFactory implements ExampleFacto
     /**
      * @param FactoryInterface<BrandInterface> $brandFactory
      * @param RepositoryInterface<LocaleInterface> $localeRepository
+     * @param FactoryInterface<BrandImageInterface> $brandImageFactory
      */
     public function __construct(
         private readonly FactoryInterface $brandFactory,
         private readonly RepositoryInterface $localeRepository,
         private readonly SlugGeneratorInterface $slugGenerator,
+        private readonly FactoryInterface $brandImageFactory,
+        private readonly ImageUploaderInterface $imageUploader,
+        private readonly FileLocatorInterface $fileLocator,
     ) {
         $this->optionsResolver = new OptionsResolver();
 
@@ -92,7 +100,42 @@ class BrandExampleFactory extends AbstractExampleFactory implements ExampleFacto
             $brand->setDescription($description);
         }
 
+        $image = $options['image'];
+        Assert::nullOrString($image);
+
+        if (null !== $image) {
+            $this->attachLogo($brand, $image);
+        }
+
         return $brand;
+    }
+
+    /**
+     * Uploads the file and attaches it as the brand's logo.
+     *
+     * The upload is explicit because a fixture persists through the object manager, not through the
+     * resource layer, so the plugin's `ImagesUploadListener` never fires for it. Without this a
+     * fixture brand would carry an image row pointing at a file that was never written.
+     */
+    private function attachLogo(BrandInterface $brand, string $path): void
+    {
+        // Resolved through the file locator so a fixture can name the file the way the rest of
+        // Sylius' fixtures do - `@MadcodersSyliusBrandPlugin/src/Resources/...` - instead of
+        // hard-coding a path that only works in one checkout.
+        $located = $this->fileLocator->locate($path);
+
+        Assert::fileExists($located, \sprintf('Brand logo "%s" does not exist.', $path));
+
+        $logo = $this->brandImageFactory->createNew();
+        $logo->setFile(new UploadedFile($located, basename($located), null, null, true));
+
+        $this->imageUploader->upload($logo);
+
+        // The uploader keeps the handle open on the temporary copy; clearing it keeps the entity
+        // serialisable once the file has been written to its final location.
+        $logo->setFile(null);
+
+        $brand->addImage($logo);
     }
 
     protected function configureOptions(OptionsResolver $resolver): void
@@ -127,6 +170,12 @@ class BrandExampleFactory extends AbstractExampleFactory implements ExampleFacto
 
             ->setDefault('display_on_brand_overview', true)
             ->setAllowedTypes('display_on_brand_overview', 'bool')
+
+            // Path to a logo file, absolute or in `@Bundle/...` notation. Left null by default so a
+            // host writing its own brand fixtures is not forced to supply one; a brand without a
+            // logo renders as its name alone.
+            ->setDefault('image', null)
+            ->setAllowedTypes('image', ['null', 'string'])
         ;
     }
 

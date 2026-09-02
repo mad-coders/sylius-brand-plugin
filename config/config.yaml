@@ -5,14 +5,18 @@
 
 imports:
     - { resource: "resources.yaml" }
-    - { resource: "fixtures.yaml" }
     - { resource: "grids/**/*.yaml" }
     - { resource: "twig_hooks/*.yaml" }
 
-# Two files are deliberately NOT imported here:
+# Three files are deliberately NOT imported here:
 #
 #   settings.yaml       registers the plugin's section with MonsieurBiz' Settings plugin
 #   liip_imagine.yaml   registers the brand logo filter sets
+#   fixtures.yaml       demo brands, in their own `madcoders_brand` suite
+#
+# fixtures.yaml is left out because importing the plugin means asking for the brand feature, not
+# for five brands the host never created turning up in its own `sylius:fixtures:load`. Import that
+# file yourself if you want the demo data.
 #
 # Both configure extensions that belong to *other* bundles, and importing configuration for an
 # extension the host has not registered is a hard container failure. The plugin's extension prepends

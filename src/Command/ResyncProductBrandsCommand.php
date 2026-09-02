@@ -163,34 +163,60 @@ final class ResyncProductBrandsCommand extends Command
     /**
      * Streams the catalogue in id-ordered pages instead of loading it in one go: a resync runs
      * against every product a shop has, and hydrating all of them at once is how this command would
-     * fall over on the shops that need it most. Paging by a stable ascending id is safe here
-     * because the command never adds or removes products.
+     * fall over on the shops that need it most.
+     *
+     * Keyset paging (`id > lastSeen`), not `setFirstResult()`. An offset makes the database walk
+     * and discard every row before the window, so the cost of page N grows with N and a full pass
+     * over a large catalogue ends up quadratic. Ordering by ascending id is already required for
+     * the paging to be stable, so the last id of a page is exactly the cursor for the next.
+     *
+     * Each page is two queries: the ids, then the products for those ids with their attribute
+     * values fetch-joined. The join has to be a second query because a LIMIT applies to SQL rows,
+     * and a product with five attribute values would otherwise eat five of the batch - Doctrine
+     * cannot page a fetch-joined to-many association correctly. Two bounded queries per page beats
+     * the alternative, which is the resolver lazy-loading the attribute collection once per
+     * product: one query per row, against exactly the catalogues this command exists for.
      *
      * @return iterable<ProductInterface>
      */
     private function iterateProducts(int $batchSize): iterable
     {
-        $offset = 0;
+        $lastId = 0;
 
         while (true) {
-            /** @var array<array-key, ProductInterface> $products */
-            $products = $this->entityManager->createQueryBuilder()
-                ->select('o')
+            /** @var list<array{id: int}> $rows */
+            $rows = $this->entityManager->createQueryBuilder()
+                ->select('o.id')
                 ->from($this->productClass, 'o')
+                ->andWhere('o.id > :lastId')
+                ->setParameter('lastId', $lastId)
                 ->addOrderBy('o.id', 'ASC')
-                ->setFirstResult($offset)
                 ->setMaxResults($batchSize)
                 ->getQuery()
                 ->getResult()
             ;
 
-            if ([] === $products) {
+            if ([] === $rows) {
                 return;
             }
 
-            yield from $products;
+            $ids = array_map(static fn (array $row): int => $row['id'], $rows);
+            $lastId = $ids[\count($ids) - 1];
 
-            $offset += $batchSize;
+            /** @var array<array-key, ProductInterface> $products */
+            $products = $this->entityManager->createQueryBuilder()
+                ->select('o', 'attributeValue', 'attribute')
+                ->from($this->productClass, 'o')
+                ->leftJoin('o.attributes', 'attributeValue')
+                ->leftJoin('attributeValue.attribute', 'attribute')
+                ->andWhere('o.id IN (:ids)')
+                ->setParameter('ids', $ids)
+                ->addOrderBy('o.id', 'ASC')
+                ->getQuery()
+                ->getResult()
+            ;
+
+            yield from $products;
         }
     }
 

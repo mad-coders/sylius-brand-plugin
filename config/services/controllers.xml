@@ -12,6 +12,7 @@
             <argument type="service" id="madcoders_sylius_brand.provider.settings" />
             <argument type="service" id="sylius.context.channel" />
             <argument type="service" id="sylius.context.locale" />
+            <argument>%madcoders_sylius_brand.products_per_page%</argument>
         </service>
     </services>
 
