@@ -4,8 +4,12 @@
    would produce a 404 - see docs/adr-log/0008-display-toggles-per-brand.md. The brand name is still
    worth showing; only the link goes away.
 
+   A brand whose translation carries no slug has nowhere to link to, and `path()` throws on a null
+   route parameter. The repository already filters those out of every listing, so this is a safety
+   net for hosts that render the partial with a brand of their own.
+
    Parameters: `brand`, and an optional `class`. #}
-{% if brand.displayOnBrandOverview %}
+{% if brand.displayOnBrandOverview and brand.slug is not empty %}
     <a href="{{ path('madcoders_sylius_brand_shop_brand_show', { slug: brand.slug }) }}"
        class="{{ class|default('') }}">{{ brand.name }}</a>
 {% else %}

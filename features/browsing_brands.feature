@@ -86,3 +86,21 @@ Feature: Browsing brands in the shop
         And brands are disabled in the settings
         When I browse the homepage
         Then the homepage should not show the brand "Nike"
+
+    # Pagination is asserted on the status code, not through the page object: the page object
+    # reports "did not open" for a 404 and a 500 alike, and the whole point here is telling those
+    # two apart. Out-of-range pages are turned into 404s by babdev/pagerfanta-bundle, which Sylius
+    # requires - these scenarios pin that behaviour down so a dependency change cannot lose it.
+    @ui
+    Scenario: Asking for a product page past the last one
+        Given the store has a brand "Puma" with code "puma"
+        And the store has a product "Running Shoes" of the brand "puma"
+        When I ask for page 99 of the brand "Puma"
+        Then the response status code should be 404
+
+    @ui
+    Scenario: The first page of a brand's products is served normally
+        Given the store has a brand "Puma" with code "puma"
+        And the store has a product "Running Shoes" of the brand "puma"
+        When I ask for page 1 of the brand "Puma"
+        Then the response status code should be 200

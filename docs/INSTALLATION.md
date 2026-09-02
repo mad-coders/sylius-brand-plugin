@@ -44,11 +44,11 @@ prepended by the plugin's extension, so there is nothing else to copy.
 
 monsieurbiz_sylius_settings_admin:
     resource: "@MonsieurBizSyliusSettingsPlugin/Resources/config/routes/admin.yaml"
-    prefix: /admin
+    prefix: '/%sylius_admin.path_name%'
 
 madcoders_sylius_brand_admin:
     resource: "@MadcodersSyliusBrandPlugin/config/routes/admin.yaml"
-    prefix: /admin
+    prefix: '/%sylius_admin.path_name%'
 
 madcoders_sylius_brand_shop:
     resource: "@MadcodersSyliusBrandPlugin/config/routes/shop.yaml"

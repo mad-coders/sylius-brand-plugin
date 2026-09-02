@@ -6,7 +6,7 @@
 /ai                export-ignore
 /behat.yml.dist    export-ignore
 /compose.yml       export-ignore
-/docs              export-ignore
+/docs/PLAN.md      export-ignore
 /ecs.php           export-ignore
 /etc               export-ignore
 /features          export-ignore

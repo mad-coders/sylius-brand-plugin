@@ -11,6 +11,9 @@
             <argument type="service" id="madcoders_sylius_brand.resolver.product_brand_synchronizer" />
             <argument type="service" id="madcoders_sylius_brand.provider.settings" />
             <argument>%sylius.model.product.class%</argument>
+            <!-- on-invalid="null" so the plugin still boots on a host that has not configured
+                 framework.lock; the command then falls back to LockableTrait's local store. -->
+            <argument type="service" id="lock.default.factory" on-invalid="null" />
 
             <tag name="console.command" />
         </service>

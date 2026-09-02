@@ -168,6 +168,11 @@ class BrandRepository extends EntityRepository implements BrandRepositoryInterfa
      * shopper's locale has no name and no slug, so it has nothing to render and nowhere to link to.
      * Listing it would produce a blank tile pointing at a 404.
      *
+     * A translation row can exist with a NULL slug - the column is nullable, and non-form writes
+     * (fixtures, imports, Sylius auto-creating an empty translation) bypass the NotBlank that the
+     * admin form applies. Such a row is filtered out here rather than handed to `path()`, which
+     * throws on a null route parameter and would 500 a public page.
+     *
      * The images are fetch-joined because every listing renders the logo. Without it, `getLogo()`
      * lazy-loads once per brand - one extra query per tile on the overview page.
      */
@@ -177,6 +182,8 @@ class BrandRepository extends EntityRepository implements BrandRepositoryInterfa
             ->addSelect('translation')
             ->innerJoin('o.translations', 'translation', 'WITH', 'translation.locale = :localeCode')
             ->andWhere('o.enabled = true')
+            ->andWhere('translation.slug IS NOT NULL')
+            ->andWhere("translation.slug != ''")
             ->setParameter('localeCode', $localeCode)
             ->addOrderBy('o.position', 'ASC')
             ->addOrderBy('translation.name', 'ASC')
